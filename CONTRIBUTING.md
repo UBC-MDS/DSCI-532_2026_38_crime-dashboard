@@ -35,7 +35,7 @@ cd DSCI-532_2026_38_crime-dashboard
 
 # Create and activate conda environment
 conda env create -f environment.yml
-conda activate crime-dashboard-env
+conda activate crime-dashboard
 ```
 
 ## Pull Request Guidelines
