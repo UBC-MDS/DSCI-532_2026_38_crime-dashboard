@@ -1,0 +1,3 @@
+# Crime Dashboard
+
+This interactive crime dashboard visualizes annual crime data from 1975 to 2015 across major North American cities, enabling users to explore long-term trends and geographic patterns in public safety. Its central feature is an interactive, geocoded map that allows users to examine various crime rates by city. Together in combination with additional visualization, the tools populating this dashboard provide a data-driven, temporal view of how crime has evolved across North America.
