@@ -10,6 +10,14 @@
 > To address this challenge, we propose building an interactive crime trends dashboard that allows policy analysts to visually explore long-term crime data. Our app will display trends over time, allow filtering by city and year range, and enable comparisons between crime categories and across multiple cities. By transforming raw data into clear visualizations, the dashboard will help decision makers identify patterns, detect anomalies, and generate evidence-based insights to inform public safety strategies.
 
 ## Section 2: Description of the Data 
+Key Variables:
+
+Geographic/Temporal: department_name (city), year (1975-2015), ORI (agency identifier)
+Population: total_pop (city population for rate calculations)
+Violent Crime Totals: violent_crime (sum of all violent offenses), homs_sum (homicides), rape_sum, rob_sum (robberies), agg_ass_sum (aggravated assaults)
+Crime Rates: violent_per_100k, homs_per_100k, rape_per_100k, rob_per_100k, agg_ass_per_100k (all normalized per 100,000 population)
+Data Quality: months_reported (indicates completeness of annual reporting)
+Rows in Dataset: 2898
 
 ## Section 3: Research Questions & Usage Scenarios
 
