@@ -123,33 +123,18 @@ This stacked bar chart aggregates crime data across all 68 cities to show the ov
 
 **How This Supports User Story 2**:
 
-This visualization directly addresses **User Story 2**: *"As a policy analyst, I want to compare violent and property crime trends so that I can understand whether different crime categories follow similar or divergent patterns over time."*
+This visualization directly addresses User Story 2 by enabling comparison of violent crime categories over time. Displaying all four crime types together shows that they follow similar rise-and-fall patterns, while differing in magnitude—robberies decline more sharply than homicides—suggesting both broad societal influences and category-specific intervention effects.
 
-By displaying all four violent crime types in a single view, analysts can observe that: - All crime categories generally follow the same temporal pattern (rise and fall together) - However, the *magnitude* of change differs—robberies show a steeper decline than homicides - This suggests that while broad societal factors may affect all crime types, certain interventions may be more effective for specific categories
-
-The year-over-year aggregation allows Jordan to identify national-level trends before drilling down into city-specific patterns, helping him distinguish between local anomalies and widespread phenomena.
-
-By identifying that most major cities peaked around 1991-1993, Jordan can investigate whether common federal policies (e.g., community policing initiatives, crime bills) correlate with the subsequent decline, or whether local factors explain variation. The data's consistency and completeness across 41 years ensures these patterns are robust and actionable for policy analysis.
+The year-over-year aggregation helps Jordan identify national trends before exploring city-level variation, distinguishing widespread patterns from local anomalies. Observing that most cities peaked around 1991–1993 allows further investigation into whether federal policies or local factors drove the subsequent decline. The dataset’s consistency across 41 years makes these insights robust and actionable for policy analysis.
 
 ## Section 5: App Sketch & Description
 
 <p align="center">
   <img src="../img/sketch.png" width="2000">
 </p>
-The Crime Trends Dashboard follows a structured two-column layout designed to support interactive exploration of long-term UCR crime data from 1975–2015. The interface consists of a header, a left-side filter panel, summary statistic cards, and three primary visual components: a time-series chart, a geographic map, and a city comparison bar chart. The layout is designed to guide users from high-level summaries to detailed comparative analysis.
 
-At the top of the dashboard, a header clearly identifies the scope of the analysis, indicating that the application focuses on historical crime trends across major U.S. cities. This provides contextual framing for the data being explored.
+The Crime Trends Dashboard uses a two-column layout to support interactive exploration of UCR crime data from 1975–2015. A header defines the scope of the analysis, while a left-side filter panel allows users to select cities, adjust the year range, and choose a crime category, with all visuals updating dynamically.
 
-The left sidebar contains the primary interactive controls. Users can select one or multiple cities using a multi-select dropdown, adjust the year range using a slider spanning 1975 to 2015, and choose the crime category (e.g., violent crime or property crime) from a dropdown menu. A reset button allows users to quickly return to the default state of the dashboard. These filters update all visual components dynamically, enabling customized analysis of specific cities, time periods, and crime categories.
-
-The top of the main content area contains summary statistic cards. These include the peak crime year within the selected time range and the current crime rate for the selected city or cities. These metrics provide immediate high-level insights before deeper analysis. The peak year indicator directly supports the identification of significant crime periods, while the displayed crime rate contextualizes the magnitude of the selected metric.
-
-The primary visualization is a time-series line chart showing crime rates over time. The x-axis represents year, and the y-axis represents the selected crime rate (preferably per 100,000 population). When multiple cities are selected, each city is represented by a separate line, enabling direct comparison of long-term trends. This visualization supports analysis of sustained increases, declines, and timing differences across cities and crime categories.
-
-A geographic map component displays selected cities across the United States. Color intensity represents the magnitude of crime rates, allowing users to quickly identify geographic patterns or regional clustering. The map updates based on selected filters and complements the time-series analysis by adding spatial context.
-
-Finally, a bar chart provides side-by-side comparison of cities within a selected year or averaged over the chosen time range. This component allows users to compare magnitudes directly and identify which cities experienced larger increases or decreases during specific periods.
-
-All components are interconnected. Adjusting filters dynamically updates summary statistics, the line chart, the map, and the comparison chart simultaneously. This coordinated interaction ensures that users can seamlessly move between temporal, geographic, and comparative perspectives while maintaining analytical consistency.
+The main panel includes summary statistic cards highlighting the peak crime year and current crime rate, followed by three core visualizations: a time-series line chart showing crime trends over time, a geographic map displaying spatial patterns across U.S. cities, and a bar chart for direct city-to-city comparison. Together, these linked components enable users to move seamlessly between temporal, geographic, and comparative analysis.
 
 
