@@ -1,1 +1,3 @@
-This interactive crime dashboard visualizes annual crime data from 1975 to 2015 across major North American cities, enabling users to explore long-term trends and geographic patterns in public safety. Its central feature is an interactive, geocoded map that allows users to examine various crime rates by city. Together in combination with additional visualization, the tools populating this dashboard provide a data-driven, temporal view of how crime has evolved across North America.
+## Crime Trends Dashboard
+
+> The Crime Trends Dashboard is an interactive data visualization tool that explores city level UCR crime data from 1975 - 2015. It allows users to analyze long term trends in violent and property crime, filter by city and year range, and compare patterns across multiple cities. The dashboard helps public safety analysts quickly identify historical shifts, peak crime periods, and differences in crime trajectories to support data driven decision making.
