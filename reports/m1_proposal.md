@@ -133,7 +133,7 @@ By identifying that most major cities peaked around 1991-1993, Jordan can invest
 ## Section 5: App Sketch & Description
 
 <p align="center">
-  <img src="../img/sketch.png" width="1200">
+  <img src="../img/sketch.png" width="1800">
 </p>
 
 
