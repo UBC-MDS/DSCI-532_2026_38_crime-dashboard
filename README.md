@@ -10,7 +10,7 @@ This interactive crime dashboard visualizes annual crime data from 1975 to 2015 
 
 ```{bash}
 git clone https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard.git
-cd your-repo-name
+cd DSCI-532_2026_38_crime-dashboard
 ```
 
 2. Create and activate environment
@@ -23,5 +23,12 @@ conda activate crime-dashboard
 3. Run the app
 
 ```{bash}
-shiny run --reload app.py
+python -m shiny run --reload src/app.py
+```
+
+### Note:
+If you would like to use this environment with Jupyter notebooks, register the kernel with:
+```{bash}
+python -m ipykernel install --user --name crime-dashboard --display-name "Python (crime-dashboard)"
+jupyter lab
 ```
