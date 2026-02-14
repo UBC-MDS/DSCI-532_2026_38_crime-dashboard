@@ -20,6 +20,18 @@
 -   **Data Quality**: `months_reported` (indicates completeness of annual reporting)
 -   **Rows in Dataset**: 2898
 
+### Relevance to User Stories
+
+This dataset directly supports our dashboard's purpose:
+
+1.  **Long-term Trend Analysis** (User Story 1 & 4): The 41-year timeframe captures complete crime cycles, including the 1990s crime surge and subsequent decline, enabling policy analysts to identify peak years and intervention periods.
+
+2.  **Crime Category Comparison** (User Story 2): Separate violent crime totals allow comparison between homicides, robberies, rapes, and assaults to understand whether different crime types follow similar or divergent patterns.
+
+3.  **Multi-city Comparison** (User Story 3): With 68 major cities, analysts can compare how crime evolved differently across geographic regions, identifying outliers and testing hypotheses about policy effectiveness.
+
+4.  **Normalized Metrics**: Pre-calculated per-100k rates account for population changes over time, ensuring fair comparisons both within cities across decades and between cities of different sizes.
+
 ## Section 3: Research Questions & Usage Scenarios
 
 ### Persona
@@ -72,17 +84,6 @@
 > As a policy analyst, I want to identify peak crime years for each city so that I can contextualize policy changes and major interventions around those time periods.
 
 ## Section 4: Exploratory Data Analysis 
-### Relevance to User Stories
-
-This dataset directly supports our dashboard's purpose:
-
-1.  **Long-term Trend Analysis** (User Story 1 & 4): The 41-year timeframe captures complete crime cycles, including the 1990s crime surge and subsequent decline, enabling policy analysts to identify peak years and intervention periods.
-
-2.  **Crime Category Comparison** (User Story 2): Separate violent crime totals allow comparison between homicides, robberies, rapes, and assaults to understand whether different crime types follow similar or divergent patterns.
-
-3.  **Multi-city Comparison** (User Story 3): With 68 major cities, analysts can compare how crime evolved differently across geographic regions, identifying outliers and testing hypotheses about policy effectiveness.
-
-4.  **Normalized Metrics**: Pre-calculated per-100k rates account for population changes over time, ensuring fair comparisons both within cities across decades and between cities of different sizes.
 
 To validate that our dataset supports the dashboard's user stories, we conducted an exploratory analysis focused on **User Story 4**: *"As a policy analyst, I want to identify peak crime years for each city so that I can contextualize policy changes and major interventions around those time periods."*
 
