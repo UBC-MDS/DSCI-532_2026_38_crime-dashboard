@@ -135,8 +135,6 @@ By identifying that most major cities peaked around 1991-1993, Jordan can invest
 <p align="center">
   <img src="../img/sketch.png" width="2000">
 </p>
-
-
 The Crime Trends Dashboard follows a structured two-column layout designed to support interactive exploration of long-term UCR crime data from 1975–2015. The interface consists of a header, a left-side filter panel, summary statistic cards, and three primary visual components: a time-series chart, a geographic map, and a city comparison bar chart. The layout is designed to guide users from high-level summaries to detailed comparative analysis.
 
 At the top of the dashboard, a header clearly identifies the scope of the analysis, indicating that the application focuses on historical crime trends across major U.S. cities. This provides contextual framing for the data being explored.
