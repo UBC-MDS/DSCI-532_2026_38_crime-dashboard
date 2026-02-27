@@ -29,12 +29,13 @@
 | `out_map` | Output | `@render.plot` | `map_df` | #3 | Mani |
 | `out_city_comparison` | Output | `@render.plot` | `comparison_df` | #3 | Derrick |
 
-### 2.3 Reactivity Diagram 
+```mermaid
 flowchart TD
-  %% Inputs (these match src/app.py)
+
+  %% Inputs
   C[/city/] --> F{{filtered_df}}
   Y[/year_range/] --> F
-  T[/crime_type/] --> F
+  T[/crime_type/]
   R[/reset/] --> RE{{reset_effect}}
 
   %% Reactive calcs
@@ -47,13 +48,17 @@ flowchart TD
   PK --> O1([out_peak_year])
   KPI --> O2([out_crime_rate])
   F --> O3([out_trend_plot])
+  T --> O3
   MAP --> O4([out_map])
   CMP --> O5([out_city_comparison])
 
-  %% Reset effect (optional logic)
+  %% Reset effect updates inputs
   RE --> C
   RE --> Y
   RE --> T
+```
+
+
   
   
   ## 2.4 Calculation Details
