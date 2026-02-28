@@ -14,8 +14,8 @@ dependencies:
   - numpy
   - altair
   - plotly
-
-
+  - faicons
+  - vega_datasets
   - pyarrow
 
   # app
@@ -26,3 +26,4 @@ dependencies:
       - vegafusion>=2.0.3
       - vegafusion-python-embed>=1.0.0
       - vl-convert-python>=1.8.0
+      - rsconnect-python
