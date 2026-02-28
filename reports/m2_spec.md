@@ -12,33 +12,30 @@
 
 
 ### 2.2 Component Inventory
-
 | ID | Type | Shiny widget / renderer | Depends on | Job story | Owner |
-|---|---|---|---|---|---|
+|----|------|--------------------------|------------|-----------|--------|
 | `city` | Input | `ui.input_selectize()` (multi-select cities) | — | #1, #3 | Derrick |
 | `year_range` | Input | `ui.input_slider()` (1975–2015 range slider) | — | #1 | Derrick |
 | `crime_type` | Input | `ui.input_select()` (violent/property) | — | #2 | Mani |
 | `reset` | Input | `ui.input_action_button()` (reset filters) | — | #1, #2, #3 | Mani |
-
 | `filtered_df` | Reactive calc | `@reactive.calc` | `city`, `year_range`, `crime_type` | #1, #2, #3, #4 | Lavanya |
 | `peak_stats` | Reactive calc | `@reactive.calc` | `filtered_df` | #4 | Lavanya |
 | `kpi_stats` | Reactive calc | `@reactive.calc` | `filtered_df` | #1, #2 | Diana |
 | `comparison_df` | Reactive calc | `@reactive.calc` | `filtered_df` | #3 | Diana |
 | `map_df` | Reactive calc | `@reactive.calc` | `filtered_df` | #3 | Mani |
-
 | `out_peak_year` | Output | `@render.ui` (value box / text) | `peak_stats` | #4 | Lavanya |
 | `out_crime_rate` | Output | `@render.ui` (value box / text) | `kpi_stats` | #1, #2 | Diana |
 | `out_trend_plot` | Output | `@render.plot` (or altair renderer) | `filtered_df` | #1, #2, #3 | Lavanya |
 | `out_map` | Output | `@render.plot` | `map_df` | #3 | Mani |
 | `out_city_comparison` | Output | `@render.plot` | `comparison_df` | #3 | Derrick |
 
-
-### 2.3 Reactivity Diagram 
+```mermaid
 flowchart TD
-  %% Inputs (these match src/app.py)
+
+  %% Inputs
   C[/city/] --> F{{filtered_df}}
   Y[/year_range/] --> F
-  T[/crime_type/] --> F
+  T[/crime_type/]
   R[/reset/] --> RE{{reset_effect}}
 
   %% Reactive calcs
@@ -51,13 +48,17 @@ flowchart TD
   PK --> O1([out_peak_year])
   KPI --> O2([out_crime_rate])
   F --> O3([out_trend_plot])
+  T --> O3
   MAP --> O4([out_map])
   CMP --> O5([out_city_comparison])
 
-  %% Reset effect (optional logic)
+  %% Reset effect updates inputs
   RE --> C
   RE --> Y
   RE --> T
+```
+
+
   
   
   ## 2.4 Calculation Details
