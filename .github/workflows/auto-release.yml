@@ -57,7 +57,7 @@ jobs:
           fi
       
       - name: Extract changelog
-        if: steps.check_tag.outputs.exists == 'false'
+        if: ${{ steps.check_tag.outputs.exists == 'false' }}
         id: changelog
         run: |
           VERSION_NUM="${{ steps.version.outputs.version_number }}"
@@ -86,7 +86,7 @@ Changes in this release:
           cat release_notes.md
       
       - name: Create and push tag
-        if: steps.check_tag.outputs.exists == 'false'
+        if: ${{ steps.check_tag.outputs.exists == 'false' }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
@@ -97,7 +97,7 @@ Changes in this release:
           git push origin "$VERSION"
       
       - name: Create GitHub Release
-        if: steps.check_tag.outputs.exists == 'false'
+        if: ${{ steps.check_tag.outputs.exists == 'false' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
