@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import altair as alt
 from vega_datasets import data as vega_data
+from shiny import req
 
 
 
@@ -351,6 +352,7 @@ def server(input, output, session):
     def trend_plot():
         df = filtered_df()
         col = selected_column()
+        req(col is not None)
         fig, ax = plt.subplots(figsize=(10, 4.8))
 
         # IMPORTANT: don't spaghetti-plot all cities by default
@@ -383,6 +385,7 @@ def server(input, output, session):
     def city_comparison_plot():
         df = filtered_df()
         col = selected_column()
+        req(col is not None)
         fig, ax = plt.subplots(figsize=(10, 4.8))
 
         if not input.city():
