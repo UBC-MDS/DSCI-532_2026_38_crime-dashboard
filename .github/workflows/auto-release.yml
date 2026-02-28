@@ -4,106 +4,64 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Calculate next version
+
+      - name: Get version
         id: version
         run: |
           git fetch --tags
+          LATEST=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
           
-          LATEST_TAG=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
-          
-          if [ -z "$LATEST_TAG" ]; then
+          if [ -z "$LATEST" ]; then
             NEW_VERSION="v0.2.0"
-            echo "No previous tags found, starting with $NEW_VERSION"
           else
-            VERSION=${LATEST_TAG#v}
+            VERSION=${LATEST#v}
             IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-            
             MINOR=$((MINOR + 1))
-            PATCH=0
-            
-            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
-            echo "Latest tag: $LATEST_TAG"
-            echo "New version: $NEW_VERSION"
+            NEW_VERSION="v${MAJOR}.${MINOR}.0"
           fi
           
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "version_number=${NEW_VERSION#v}" >> $GITHUB_OUTPUT
-      
-      - name: Check if tag already exists
-        id: check_tag
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
-            echo "Tag $VERSION already exists, skipping release"
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "Tag $VERSION does not exist, proceeding with release"
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Extract changelog
-        if: steps.check_tag.outputs.exists != 'true'
-        id: changelog
-        run: |
-          VERSION_NUM="${{ steps.version.outputs.version_number }}"
-          
-          if [ -f "CHANGELOG.md" ]; then
-            CHANGELOG=$(awk "/## \[${VERSION_NUM}\]/,/^## \[/" CHANGELOG.md | sed '/^## \[/d' | sed '/^$/d' | head -n -1)
-            
-            if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="Release ${VERSION_NUM}
 
-Changes in this release:
-- Merged changes from dev branch
-- See commit history for detailed changes"
-            fi
-          else
-            CHANGELOG="Release ${VERSION_NUM}
-
-Changes in this release:
-- Merged changes from dev branch  
-- See commit history for detailed changes"
-          fi
-          
-          echo "$CHANGELOG" > release_notes.md
-          
-          echo "Release notes:"
-          cat release_notes.md
-      
-      - name: Create and push tag
-        if: steps.check_tag.outputs.exists != 'true'
+      - name: Check tag exists
+        id: check
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          
+          if git rev-parse "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create changelog
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          echo "Release ${{ steps.version.outputs.version }}" > notes.md
+          echo "" >> notes.md
+          echo "Changes:" >> notes.md
+          echo "- Merged from dev branch" >> notes.md
+
+      - name: Push tag
+        if: steps.check.outputs.skip == 'false'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git tag -a "$VERSION" -m "Release $VERSION"
-          git push origin "$VERSION"
-      
-      - name: Create GitHub Release
-        if: steps.check_tag.outputs.exists != 'true'
+          git tag -a "${{ steps.version.outputs.version }}" -m "Release ${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.version }}"
+
+      - name: Create release
+        if: steps.check.outputs.skip == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
-          body_path: release_notes.md
-          draft: false
-          prerelease: false
+          body_path: notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
