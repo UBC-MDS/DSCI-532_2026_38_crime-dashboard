@@ -6,11 +6,11 @@ This interactive crime dashboard visualizes annual crime data from 1975 to 2015 
 
 ## Deployed Dashboard
 
-<>
+<https://019c9728-2587-c2e2-7794-f6443291c277.share.connect.posit.cloud/>
 
 ## Dashboard Preview
 
-
+![Dashboard Demo](../img/demo.gif)
 
 ## Instructions for Local Use
 
