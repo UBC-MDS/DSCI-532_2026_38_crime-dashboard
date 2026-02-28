@@ -5,6 +5,7 @@ from pathlib import Path
 import altair as alt
 from vega_datasets import data as vega_data
 from shiny import req
+from faicons import icon_svg
 
 
 
@@ -44,8 +45,8 @@ app_ui = ui.page_fillable(
         ui.h2("CRIME TRENDS"),
         ui.div(
             {"class": "header-sub"},
-            ui.span("1975–2015", class_="chip"),
-            ui.span("Rates per 100k residents • U.S. departments", class_="muted"),
+            ui.span("(1975–2015)", class_="chip"),
+            ui.span(" Rates per 100k residents • U.S. departments", class_="muted"),
         ),
     ),
     ui.layout_sidebar(
@@ -99,6 +100,7 @@ app_ui = ui.page_fillable(
             ui.input_action_button(
                 "reset",
                 "RESET",
+                icon=icon_svg("rotate-left"), # Adds a reset arrow icon
                 class_="btn btn-dark w-100 reset-btn",
             ),
         ),
