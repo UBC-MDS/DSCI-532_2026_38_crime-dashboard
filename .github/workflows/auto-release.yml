@@ -16,27 +16,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Get all tags
+          fetch-depth: 0
       
       - name: Calculate next version
         id: version
         run: |
-          # Get all version tags
           git fetch --tags
           
-          # Find the latest tag that matches v*.*.* pattern
           LATEST_TAG=$(git tag -l "v[0-9]*.[0-9]*.[0-9]*" | sort -V | tail -n 1)
           
           if [ -z "$LATEST_TAG" ]; then
-            # No tags exist yet, start with v0.2.0 (since v0.1.0 already exists)
             NEW_VERSION="v0.2.0"
             echo "No previous tags found, starting with $NEW_VERSION"
           else
-            # Parse the latest tag
-            VERSION=${LATEST_TAG#v}  # Remove 'v' prefix
+            VERSION=${LATEST_TAG#v}
             IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
             
-            # Increment minor version
             MINOR=$((MINOR + 1))
             PATCH=0
             
@@ -68,7 +63,6 @@ jobs:
           VERSION_NUM="${{ steps.version.outputs.version_number }}"
           
           if [ -f "CHANGELOG.md" ]; then
-            # Extract changelog for this version
             CHANGELOG=$(awk "/## \[${VERSION_NUM}\]/,/^## \[/" CHANGELOG.md | sed '/^## \[/d' | sed '/^$/d' | head -n -1)
             
             if [ -z "$CHANGELOG" ]; then
@@ -86,7 +80,6 @@ Changes in this release:
 - See commit history for detailed changes"
           fi
           
-          # Save to file
           echo "$CHANGELOG" > release_notes.md
           
           echo "Release notes:"
@@ -105,7 +98,7 @@ Changes in this release:
       
       - name: Create GitHub Release
         if: steps.check_tag.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
