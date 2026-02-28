@@ -10,9 +10,7 @@ This interactive crime dashboard visualizes annual crime data from 1975 to 2015 
 
 ## Dashboard Preview
 
-<p align="center">
-  <img src="../img/demo.gif" width="2000">
-</p>
+<img src="/img/demo.gif" alt="Dashboard Demo" width="1000">
 
 ## Instructions for Local Use
 
