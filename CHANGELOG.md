@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.2.1] - 2026-03-05
+
+### Changed
+
+- Aligned chart titles with card headers for consistency across all visualizations
+- Converted City Comparison bar chart from vertical to horizontal orientation to prevent x-axis labels from being cut off
+
+### Fixed
+
+- Synchronized color schemes between Trend Over Time line chart and City Comparison bar chart so the same city uses the same color in both visualizations
+
 ## [0.2.0] - 2026-02-28
 
 ### Added
