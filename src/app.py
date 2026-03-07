@@ -370,7 +370,7 @@ def server(input, output, session):
             val = str(int(df.loc[idx, "year"]))
             return ui.h3(val, class_="kpi-val")
         except (KeyError, ValueError):
-            return ui.h3("Select a City", class_="kpi-val")
+            return ui.h6("Select a type of Crime", class_="kpi-val")
 
     @output
     @render.ui
@@ -378,7 +378,7 @@ def server(input, output, session):
         col = selected_column()
         df = filtered_df()
         if col is None or df.empty:
-            return ui.h3("Select a City", class_="kpi-val")
+            return ui.h6("Select a type of Crime", class_="kpi-val")
 
         # 3. Calculate mean safely
         try:
