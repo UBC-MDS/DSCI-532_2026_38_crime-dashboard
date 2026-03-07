@@ -529,7 +529,7 @@ def server(input, output, session):
         final_map = combined_chart.properties(
             width='container',
             height=400,
-            title=f"{current_metric} Rate by State — {year}"
+            title=f"{current_metric} Rate by State — {current_year}"
         ).configure(
             # Using the dictionary-style configuration is more compatible across versions
             autosize=alt.AutoSizeParams(type='fit', contains='padding'),
