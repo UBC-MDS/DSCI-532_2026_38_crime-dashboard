@@ -44,89 +44,21 @@ qc = QueryChat(
 
 # UI
 
-app_ui = ui.page_navbar(
-    #  Tab 1: Original Dashboard 
-    ui.nav_panel(
-        "Dashboard",
-        ui.page_fillable(
-            ui.tags.head(
+
 app_ui = ui.page_fillable(
     
     ui.tags.head(
-                ui.tags.link(
-                    rel="stylesheet",
-                    href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
-                ),
-                ui.include_css("www/styles.css"),
-            ),
+        ui.tags.link(
+            rel="stylesheet",
+            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
+        ),
+        ui.include_css("www/styles.css"),
+    ),
     
     ui.navset_tab(
-
+        # Tab 1: Crime Dashboard
         ui.nav_panel(
             "Crime Dashboard",
-            ui.div(
-        {"class": "app-header"},
-        ui.h2("CRIME TRENDS"),
-        ui.div(
-            {"class": "header-sub"},
-            ui.span("(1975–2015)", class_="chip"),
-            ui.span(" Rates per 100k residents • U.S. departments", class_="muted"),
-        ),
-    ),
-    ui.layout_sidebar(
-        ui.sidebar(
-            {"class": "sidebar-card"},
-            ui.h6("Filters", class_="sidebar-title"),
-            ui.input_selectize(
-                "city",
-                "Select City (max 6)",
-                choices=sorted(crimes_df["department_name"].unique()),
-                multiple=True,
-                options={"placeholder": "Type to search cities...", "maxItems": 6},
-            ),
-            ui.input_slider(
-                "year_range",
-                "Year Range",
-                min=int(crimes_df["year"].min()),
-                max=int(crimes_df["year"].max()),
-                value=(int(crimes_df["year"].min()), int(crimes_df["year"].max())),
-                step=1,
-            ),
-            ui.hr(),
-            ui.h6("Map Controls", class_="sidebar-title"),
-            ui.input_slider(
-                "map_year",
-                "Map Year",
-                min=int(crimes_df["year"].min()),
-                max=int(crimes_df["year"].max()),
-                value=int(crimes_df["year"].max()),
-                step=5,
-                sep=""
-            ),
-            ui.input_select(
-                "map_color_scheme",
-                "Color Scheme",
-                choices={
-                    "None": "Select Color",
-                    "orangered": "Orange-Red",
-                    "reds": "Reds",
-                    "blues": "Blues",
-                    "purples": "Purples"
-                },
-                selected="None"
-            ),
-            ui.input_select(
-                "crime_type",
-                "Crime Metric",
-                choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                selected="None"
-            ),
-            ui.input_action_button(
-                "reset",
-                "RESET",
-                icon=icon_svg("rotate-left"), # Adds a reset arrow icon
-                class_="btn btn-dark w-100 reset-btn",
-            ),
             ui.div(
                 {"class": "app-header"},
                 ui.h2("CRIME TRENDS"),
@@ -170,19 +102,18 @@ app_ui = ui.page_fillable(
                         "map_color_scheme",
                         "Color Scheme",
                         choices={
-                            "None": "Select Color",
                             "orangered": "Orange-Red",
                             "reds": "Reds",
                             "blues": "Blues",
                             "purples": "Purples"
                         },
-                        selected="None"
+                        selected="orangered"
                     ),
                     ui.input_select(
                         "crime_type",
                         "Crime Metric",
-                        choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                        selected="None"
+                        choices=["Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
+                        selected="Violent Crime"
                     ),
                     ui.input_action_button(
                         "reset",
@@ -191,6 +122,7 @@ app_ui = ui.page_fillable(
                         class_="btn btn-dark w-100 reset-btn",
                     ),
                 ),
+                # Main content area
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
@@ -233,55 +165,45 @@ app_ui = ui.page_fillable(
                 ),
             ),
         ),
-    ),
 
-    #  Tab 2: AI Explorer 
-    ui.nav_panel(
-        "AI Explorer",
-        ui.page_sidebar(
-            ui.sidebar(qc.ui()),
-            # Main content area
-            ui.layout_columns(
-                ui.card(
-                    {"class": "kpi-card"},
-                    ui.card_header("Rows in Filtered Data"),
-                    ui.output_ui("ai_row_count"),
-                ),
-                ui.card(
-                    {"class": "kpi-card"},
-                    ui.card_header("Cities in Filtered Data"),
-                    ui.output_ui("ai_city_count"),
-                ),
-                col_widths=(6, 6),
-            ),
-            ui.layout_columns(
-                ui.card(
-                    ui.card_header("Violent Crime Trend Over Time"),
-                    ui.output_ui("ai_trend_chart"),
-                ),
-                ui.card(
-                    ui.card_header("Crime Rate by City"),
-                    ui.output_ui("ai_city_bar_chart"),
-                ),
-                col_widths=(6, 6),
-            ),
-            ui.card(
-                ui.card_header("Filtered Crime Data"),
-                ui.output_data_frame("ai_data_table"),
-                ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
-            ),
-        ),
-    ),
-
-    title="Crime Trends Dashboard",
-    fillable=True,
-        ),
+        # Tab 2: AI Explorer
         ui.nav_panel(
-            "Analysis Page",
-            ui.h3("Chatbot"),
-            ui.p("You can add new charts, tables, or maps here.")
-        )
-    )
+            "AI Explorer",
+            ui.page_sidebar(
+                ui.sidebar(qc.ui()),
+                # Main content area
+                ui.layout_columns(
+                    ui.card(
+                        {"class": "kpi-card"},
+                        ui.card_header("Rows in Filtered Data"),
+                        ui.output_ui("ai_row_count"),
+                    ),
+                    ui.card(
+                        {"class": "kpi-card"},
+                        ui.card_header("Cities in Filtered Data"),
+                        ui.output_ui("ai_city_count"),
+                    ),
+                    col_widths=(6, 6),
+                ),
+                ui.layout_columns(
+                    ui.card(
+                        ui.card_header("Violent Crime Trend Over Time"),
+                        ui.output_ui("ai_trend_chart"),
+                    ),
+                    ui.card(
+                        ui.card_header("Crime Rate by City"),
+                        ui.output_ui("ai_city_bar_chart"),
+                    ),
+                    col_widths=(6, 6),
+                ),
+                ui.card(
+                    ui.card_header("Filtered Crime Data"),
+                    ui.output_data_frame("ai_data_table"),
+                    ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
+                ),
+            ),
+        ),
+    ),
 )
 
 
