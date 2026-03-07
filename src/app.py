@@ -53,6 +53,12 @@ app_ui = ui.page_fillable(
             href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
         ),
         ui.include_css("www/styles.css"),
+
+        # --- ADD THESE 3 LINES TO PRELOAD THE MAP SCRIPTS ---
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@5"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-embed@6"),
+        # ----------------------------------------------------
     ),
     
     ui.navset_tab(
@@ -372,7 +378,6 @@ def server(input, output, session):
         col = selected_column()
         df = filtered_df()
         if col is None or df.empty:
-            return ui.h3("No Metric Selected", class_="kpi-val")
             return ui.h3("Select a City", class_="kpi-val")
 
         # 3. Calculate mean safely
