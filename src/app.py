@@ -33,7 +33,7 @@ crimes_df = pd.read_csv(DATA_PATH)
 
 #  QueryChat Setup 
 # Create a QueryChat instance for the AI tab
-# Uses ANTHROPIC_API_KEY from your .env file automatically
+# Use ANTHROPIC_API_KEY from .env file automatically
 qc = QueryChat(
     crimes_df,
     "crime_data",
@@ -44,7 +44,7 @@ qc = QueryChat(
 
 # UI
 
-
+#app wasnt showing anything
 app_ui = ui.page_fillable(
     
     ui.tags.head(
