@@ -215,9 +215,6 @@ def server(input, output, session):
     
 
     def selected_column():
-
-        if input.crime_type() == "None":
-            return None
     
         mapping = {
             "Violent Crime": "violent_per_100k",
@@ -236,9 +233,9 @@ def server(input, output, session):
             "year_range",
             value=(int(crimes_df["year"].min()), int(crimes_df["year"].max())),
         )
-        ui.update_select("crime_type", selected="None")
+        ui.update_select("crime_type", selected="Violent Crime")
         ui.update_slider("map_year", value=int(crimes_df["year"].max()))
-        ui.update_select("map_color_scheme", selected="None")
+        ui.update_select("map_color_scheme", selected="Reds")
 
 
     @reactive.calc
@@ -400,25 +397,23 @@ def server(input, output, session):
         col = selected_column()
         req(col is not None)
         fig, ax = plt.subplots(figsize=(10, 4.8))
+        
         if not input.city():
             ax.text(0.5, 0.5, "Select 1+ cities to view trends", ha="center", va="center")
             ax.set_axis_off()
             return fig
+        
         if df.empty:
             ax.text(0.5, 0.5, "No data for selected filters", ha="center", va="center")
             ax.set_axis_off()
             return fig
-        for city, group in df.groupby("department_name"):
-            ax.plot(group["year"], group[col], label=city)
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Rate per 100k")
-        ax.set_title(f"{input.crime_type()} Trend")
-
+        
         # Create consistent color mapping for selected cities
         colors = plt.cm.tab10.colors
         selected_cities = sorted(input.city())
         city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
 
+        # Plot once with colors
         for city, group in df.groupby("department_name"):
             ax.plot(group["year"], group[col], label=city, color=city_colors[city])
 
@@ -426,9 +421,10 @@ def server(input, output, session):
         ax.set_ylabel("Rate per 100k")
         ax.set_title(f"{input.crime_type()} Trend Over Time")
 
-        # only show legend if not too many cities
+        # Only show legend if not too many cities
         if len(input.city()) <= 6:
             ax.legend()
+        
         fig.tight_layout()
         return fig
 
@@ -438,35 +434,34 @@ def server(input, output, session):
         df = filtered_df()
         col = selected_column()
         req(col is not None)
-        fig, ax = plt.subplots(figsize=(10, 4.8))
+        
+        # Create figure once
         fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
 
         if not input.city():
             ax.text(0.5, 0.5, "Select 1+ cities to compare", ha="center", va="center")
             ax.set_axis_off()
             return fig
+        
         if df.empty:
             ax.text(0.5, 0.5, "No data for selected filters", ha="center", va="center")
             ax.set_axis_off()
             return fig
+        
+        # Get summary data
         summary = (
             df.groupby("department_name", as_index=False)[col]
             .mean()
             .sort_values(col, ascending=True)
         )
-        ax.bar(summary["department_name"], summary[col])
-        ax.set_ylabel("Average rate per 100k")
-        start, end = input.year_range()
-        ax.set_title(f"{input.crime_type()} Average ({start}–{end})")
-        ax.tick_params(axis="x", rotation=35)
-        fig.tight_layout()
-
+        
         # Create consistent color mapping for selected cities (same as trend plot)
         colors = plt.cm.tab10.colors
         selected_cities = sorted(input.city())
         city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
         bar_colors = [city_colors[city] for city in summary["department_name"]]
 
+        # Plot horizontal bars once
         ax.barh(summary["department_name"], summary[col], color=bar_colors)
         ax.set_xlabel("Average rate per 100k", fontsize=9)
         ax.set_title("City Comparison", fontsize=10)
@@ -478,43 +473,40 @@ def server(input, output, session):
     @output
     @render.ui
     def choropleth_map():
-        color_scheme = input.map_color_scheme()
-        year = input.map_year()
+        """Render choropleth map showing crime rates by state."""
+        
+        # Use req() to ensure inputs are ready
+        year = req(input.map_year())
+        crime_type = req(input.crime_type())
+        color_scheme = req(input.map_color_scheme())
+        
         col = selected_column()
-        if color_scheme == "None" or col is None:
-            return ui.div(
-                ui.h4("Map Configuration Incomplete"),
-                ui.p("Please select both a Crime Metric and a Color Scheme to view the map."),
-                style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 8px;"
-            )
-        if input.crime_type() == "None":
-            return ui.div(
-                style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;",
-                children="Map hidden. Select a metric to visualize."
-            ), ui.h3("No Metric Selected", class_="kpi-val")
-            return ui.div(style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;", 
-                      children="Map hidden. Select a metric to visualize."), ui.h3("Select a City", class_="kpi-val")
-
         
         # Use full dataset for map (not filtered by cities)
         state_data = prepare_state_data(crimes_df, year, col)
+        
         if state_data.empty:
             return ui.div(
                 "No data available for selected year",
-                class_="placeholder-box",
-                style="text-align: center; padding: 50px;"
+                style="text-align: center; padding: 50px; color: #999;"
             )
+        
+        # Load US states geography
         states = alt.topo_feature(vega_data.us_10m.url, 'states')
+        
+        # Background layer
         background = alt.Chart(states).mark_geoshape(
             fill='lightgray', stroke='white', strokeWidth=1
         ).project('albersUsa').properties(width='container', height=400)
+        
+        # Choropleth layer
         choropleth = alt.Chart(states).mark_geoshape(
             stroke='white', strokeWidth=1
         ).encode(
             color=alt.Color(
                 'crime_rate:Q',
                 scale=alt.Scale(
-                    scheme=input.map_color_scheme(),
+                    scheme=color_scheme,
                     domain=[0, state_data['crime_rate'].max()]
                 ),
                 legend=alt.Legend(
@@ -531,9 +523,11 @@ def server(input, output, session):
             lookup='id',
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
         ).project('albersUsa').properties(
-            width='container', height=400,
-            title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14}
+            width='container',
+            height=400,
+            title={"text": f"{crime_type} Rate by State — {year}", "fontSize": 14}
         )
+        
         final_map = background + choropleth
         return ui.HTML(final_map.to_html())
 
@@ -541,7 +535,6 @@ def server(input, output, session):
 
     # AI EXPLORER TAB SERVER LOGIC
    
-
     # Initialize querychat — returns object with reactive .df() method
     qc_vals = qc.server()
 
