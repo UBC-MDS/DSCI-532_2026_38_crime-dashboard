@@ -31,16 +31,20 @@ crimes_df = pd.read_csv(DATA_PATH)
 # UI
 
 app_ui = ui.page_fillable(
+    
     ui.tags.head(
-        # Bootswatch "Flatly" theme (professional look)
-        ui.tags.link(
-            rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
-        ),
-        # Your custom CSS (make sure file exists at: crime-dashboard/www/styles.css)
-        ui.include_css("www/styles.css"),
-    ),
-    ui.div(
+                ui.tags.link(
+                    rel="stylesheet",
+                    href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
+                ),
+                ui.include_css("www/styles.css"),
+            ),
+    
+    ui.navset_tab(
+
+        ui.nav_panel(
+            "Crime Dashboard",
+            ui.div(
         {"class": "app-header"},
         ui.h2("CRIME TRENDS"),
         ui.div(
@@ -145,6 +149,13 @@ app_ui = ui.page_fillable(
             col_widths=(7, 5),
         ),
     ),
+        ),
+        ui.nav_panel(
+            "Analysis Page",
+            ui.h3("Chatbot"),
+            ui.p("You can add new charts, tables, or maps here.")
+        )
+    )
 )
 
 
@@ -328,7 +339,7 @@ def server(input, output, session):
             val = str(int(df.loc[idx, "year"]))
             return ui.h3(val, class_="kpi-val")
         except (KeyError, ValueError):
-            return ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.h3("Select a City", class_="kpi-val")
 
     @output
     @render.ui
@@ -339,7 +350,7 @@ def server(input, output, session):
         
         # Check 
         if col is None or df.empty:
-            return ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.h3("Select a City", class_="kpi-val")
 
         # 3. Calculate mean safely
         try:
@@ -434,7 +445,7 @@ def server(input, output, session):
     
         if input.crime_type() == "None":
             return ui.div(style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;", 
-                      children="Map hidden. Select a metric to visualize."), ui.h3("No Metric Selected", class_="kpi-val")
+                      children="Map hidden. Select a metric to visualize."), ui.h3("Select a City", class_="kpi-val")
 
         
         # Use full dataset for map (not filtered by cities)
