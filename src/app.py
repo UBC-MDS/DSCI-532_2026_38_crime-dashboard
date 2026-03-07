@@ -50,11 +50,82 @@ app_ui = ui.page_navbar(
         "Dashboard",
         ui.page_fillable(
             ui.tags.head(
+app_ui = ui.page_fillable(
+    
+    ui.tags.head(
                 ui.tags.link(
                     rel="stylesheet",
                     href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
                 ),
                 ui.include_css("www/styles.css"),
+            ),
+    
+    ui.navset_tab(
+
+        ui.nav_panel(
+            "Crime Dashboard",
+            ui.div(
+        {"class": "app-header"},
+        ui.h2("CRIME TRENDS"),
+        ui.div(
+            {"class": "header-sub"},
+            ui.span("(1975–2015)", class_="chip"),
+            ui.span(" Rates per 100k residents • U.S. departments", class_="muted"),
+        ),
+    ),
+    ui.layout_sidebar(
+        ui.sidebar(
+            {"class": "sidebar-card"},
+            ui.h6("Filters", class_="sidebar-title"),
+            ui.input_selectize(
+                "city",
+                "Select City (max 6)",
+                choices=sorted(crimes_df["department_name"].unique()),
+                multiple=True,
+                options={"placeholder": "Type to search cities...", "maxItems": 6},
+            ),
+            ui.input_slider(
+                "year_range",
+                "Year Range",
+                min=int(crimes_df["year"].min()),
+                max=int(crimes_df["year"].max()),
+                value=(int(crimes_df["year"].min()), int(crimes_df["year"].max())),
+                step=1,
+            ),
+            ui.hr(),
+            ui.h6("Map Controls", class_="sidebar-title"),
+            ui.input_slider(
+                "map_year",
+                "Map Year",
+                min=int(crimes_df["year"].min()),
+                max=int(crimes_df["year"].max()),
+                value=int(crimes_df["year"].max()),
+                step=5,
+                sep=""
+            ),
+            ui.input_select(
+                "map_color_scheme",
+                "Color Scheme",
+                choices={
+                    "None": "Select Color",
+                    "orangered": "Orange-Red",
+                    "reds": "Reds",
+                    "blues": "Blues",
+                    "purples": "Purples"
+                },
+                selected="None"
+            ),
+            ui.input_select(
+                "crime_type",
+                "Crime Metric",
+                choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
+                selected="None"
+            ),
+            ui.input_action_button(
+                "reset",
+                "RESET",
+                icon=icon_svg("rotate-left"), # Adds a reset arrow icon
+                class_="btn btn-dark w-100 reset-btn",
             ),
             ui.div(
                 {"class": "app-header"},
@@ -204,6 +275,13 @@ app_ui = ui.page_navbar(
 
     title="Crime Trends Dashboard",
     fillable=True,
+        ),
+        ui.nav_panel(
+            "Analysis Page",
+            ui.h3("Chatbot"),
+            ui.p("You can add new charts, tables, or maps here.")
+        )
+    )
 )
 
 
@@ -375,7 +453,7 @@ def server(input, output, session):
             val = str(int(df.loc[idx, "year"]))
             return ui.h3(val, class_="kpi-val")
         except (KeyError, ValueError):
-            return ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.h3("Select a City", class_="kpi-val")
 
     @output
     @render.ui
@@ -384,6 +462,9 @@ def server(input, output, session):
         df = filtered_df()
         if col is None or df.empty:
             return ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.h3("Select a City", class_="kpi-val")
+
+        # 3. Calculate mean safely
         try:
             avg_val = df[col].mean()
             return ui.h3(f"{avg_val:.1f}", class_="kpi-val")
@@ -410,6 +491,20 @@ def server(input, output, session):
         ax.set_xlabel("Year")
         ax.set_ylabel("Rate per 100k")
         ax.set_title(f"{input.crime_type()} Trend")
+
+        # Create consistent color mapping for selected cities
+        colors = plt.cm.tab10.colors
+        selected_cities = sorted(input.city())
+        city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
+
+        for city, group in df.groupby("department_name"):
+            ax.plot(group["year"], group[col], label=city, color=city_colors[city])
+
+        ax.set_xlabel("Year")
+        ax.set_ylabel("Rate per 100k")
+        ax.set_title(f"{input.crime_type()} Trend Over Time")
+
+        # only show legend if not too many cities
         if len(input.city()) <= 6:
             ax.legend()
         fig.tight_layout()
@@ -422,6 +517,8 @@ def server(input, output, session):
         col = selected_column()
         req(col is not None)
         fig, ax = plt.subplots(figsize=(10, 4.8))
+        fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
+
         if not input.city():
             ax.text(0.5, 0.5, "Select 1+ cities to compare", ha="center", va="center")
             ax.set_axis_off()
@@ -433,7 +530,7 @@ def server(input, output, session):
         summary = (
             df.groupby("department_name", as_index=False)[col]
             .mean()
-            .sort_values(col, ascending=False)
+            .sort_values(col, ascending=True)
         )
         ax.bar(summary["department_name"], summary[col])
         ax.set_ylabel("Average rate per 100k")
@@ -441,6 +538,19 @@ def server(input, output, session):
         ax.set_title(f"{input.crime_type()} Average ({start}–{end})")
         ax.tick_params(axis="x", rotation=35)
         fig.tight_layout()
+
+        # Create consistent color mapping for selected cities (same as trend plot)
+        colors = plt.cm.tab10.colors
+        selected_cities = sorted(input.city())
+        city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
+        bar_colors = [city_colors[city] for city in summary["department_name"]]
+
+        ax.barh(summary["department_name"], summary[col], color=bar_colors)
+        ax.set_xlabel("Average rate per 100k", fontsize=9)
+        ax.set_title("City Comparison", fontsize=10)
+        ax.tick_params(axis='y', labelsize=8)
+        ax.tick_params(axis='x', labelsize=8)
+
         return fig
     
     @output
@@ -460,6 +570,11 @@ def server(input, output, session):
                 style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;",
                 children="Map hidden. Select a metric to visualize."
             ), ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.div(style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;", 
+                      children="Map hidden. Select a metric to visualize."), ui.h3("Select a City", class_="kpi-val")
+
+        
+        # Use full dataset for map (not filtered by cities)
         state_data = prepare_state_data(crimes_df, year, col)
         if state_data.empty:
             return ui.div(
@@ -496,6 +611,9 @@ def server(input, output, session):
         ).project('albersUsa').properties(
             width='container', height=400,
             title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14}
+            width='container',
+            height=400,
+            title="Geographic Distribution by State"
         )
         final_map = background + choropleth
         return ui.HTML(final_map.to_html())
