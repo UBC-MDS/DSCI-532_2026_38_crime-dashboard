@@ -467,23 +467,21 @@ def server(input, output, session):
     def choropleth_map():
         """Render choropleth map showing crime rates by state."""
       
-        crime_type = input.crime_type()
+        current_metric = input.crime_type()
+        current_year = input.map_year()
 
         # 1. Handle the "Rest/None" state
-        if crime_type == "None":
+        if current_metric == "None":
             return ui.div(
                 ui.h4("Map Reset"),
                 ui.p("Select a Crime Metric to visualize the map."),
                 style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 10px;"
-            )
-        
-        year = input.map_year()
+        )
         col = selected_column()
-
         req(col)
         
         # Use full dataset for map (not filtered by cities)
-        state_data = prepare_state_data(crimes_df, year, col)
+        state_data = prepare_state_data(crimes_df, current_year, col)
         
         if state_data.empty:
             return ui.div(
