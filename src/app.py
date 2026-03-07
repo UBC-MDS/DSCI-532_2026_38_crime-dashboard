@@ -532,8 +532,7 @@ def server(input, output, session):
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
         ).project('albersUsa').properties(
             width='container', height=400,
-            title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14},
-            height=400
+            title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14}
         )
         final_map = background + choropleth
         return ui.HTML(final_map.to_html())
