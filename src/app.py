@@ -31,16 +31,20 @@ crimes_df = pd.read_csv(DATA_PATH)
 # UI
 
 app_ui = ui.page_fillable(
+    
     ui.tags.head(
-        # Bootswatch "Flatly" theme (professional look)
-        ui.tags.link(
-            rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
-        ),
-        # Your custom CSS (make sure file exists at: crime-dashboard/www/styles.css)
-        ui.include_css("www/styles.css"),
-    ),
-    ui.div(
+                ui.tags.link(
+                    rel="stylesheet",
+                    href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
+                ),
+                ui.include_css("www/styles.css"),
+            ),
+    
+    ui.navset_tab(
+
+        ui.nav_panel(
+            "Crime Dashboard",
+            ui.div(
         {"class": "app-header"},
         ui.h2("CRIME TRENDS"),
         ui.div(
@@ -145,6 +149,13 @@ app_ui = ui.page_fillable(
             col_widths=(7, 5),
         ),
     ),
+        ),
+        ui.nav_panel(
+            "Analysis Page",
+            ui.h3("Chatbot"),
+            ui.p("You can add new charts, tables, or maps here.")
+        )
+    )
 )
 
 
