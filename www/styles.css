@@ -243,3 +243,32 @@ select.form-select:focus, .form-control:focus, .selectize-input.focus {
   border-color: #8b0000 !important;
   color: #ffffff !important;
 }
+
+/* =========================================
+   YELLOW CARD HEADERS (CAUTION TAPE VIBE)
+   ========================================= */
+
+.card-header {
+  background-color: #ffcc00 !important; /* Solid Caution Yellow Background */
+  color: #000000 !important;            /* Pitch Black Text */
+  font-family: 'Oswald', sans-serif !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #000000 !important; /* Thick black line separating the header from the data */
+  padding: 12px 16px !important;
+}
+
+/* Force any custom spans or titles inside the header to be black */
+.card-header span, .card-header div {
+  color: #000000 !important;
+}
+
+/* For the tiny "Tip: Select <= 6 cities" text inside the header */
+/* We make it dark gray so it is readable against the bright yellow */
+.card-header .muted, .card-header .small {
+  color: #333333 !important; 
+  font-family: 'Roboto Mono', monospace !important;
+  font-weight: 700;
+  letter-spacing: 0px;
+}
