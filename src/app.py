@@ -531,12 +531,11 @@ def server(input, output, session):
         final_map = combined_chart.properties(
             width='container',
             height=400,
-            title={"text": f"{crime_type} Rate by State — {year}", "fontSize": 14}
-        ).configure_autosize(
-            type='fit',
-            contains='padding'
-        ).configure_view(
-            strokeWidth=0
+            title=f"{crime_type} Rate by State — {year}"
+        ).configure(
+            # Using the dictionary-style configuration is more compatible across versions
+            autosize=alt.AutoSizeParams(type='fit', contains='padding'),
+            view=alt.ViewConfig(strokeWidth=0)
         )
     
         return ui.HTML(final_map.to_html())
