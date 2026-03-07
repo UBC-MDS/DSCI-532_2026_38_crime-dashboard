@@ -46,7 +46,6 @@ qc = QueryChat(
 
 
 app_ui = ui.page_fillable(
-    
     ui.tags.head(
                 ui.tags.link(
                     rel="stylesheet",
@@ -56,7 +55,6 @@ app_ui = ui.page_fillable(
             ),
     
     ui.navset_tab(
-
         ui.nav_panel(
             "Crime Dashboard",
             ui.div(
@@ -188,15 +186,7 @@ app_ui = ui.page_fillable(
                 ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
             ),
         ),
-    ),
-
-    title="Crime Trends Dashboard",
-    fillable=True,
-        ),
-        ui.nav_panel(
-            "Analysis Page",
-            ui.h3("Chatbot"),
-            ui.p("You can add new charts, tables, or maps here.")
+    )
         )
     )
 
@@ -206,7 +196,6 @@ app_ui = ui.page_fillable(
 def server(input, output, session):
 
     # ORIGINAL DASHBOARD SERVER LOGIC (unchanged)
-    
 
     def selected_column():
 
