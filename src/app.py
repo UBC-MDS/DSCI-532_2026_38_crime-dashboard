@@ -524,7 +524,11 @@ def server(input, output, session):
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
         ).project('albersUsa')
         
-        final_map = (background + choropleth).properties(
+        # 1. Combine the layers first
+        combined_chart = background + choropleth
+
+        # 2. Apply properties and configurations to the combined object
+        final_map = combined_chart.properties(
             width='container',
             height=400,
             title={"text": f"{crime_type} Rate by State — {year}", "fontSize": 14}
@@ -532,7 +536,7 @@ def server(input, output, session):
             type='fit',
             contains='padding'
         ).configure_view(
-            strokeWidth=0 # Removes the outer border box
+            strokeWidth=0
         )
     
         return ui.HTML(final_map.to_html())
