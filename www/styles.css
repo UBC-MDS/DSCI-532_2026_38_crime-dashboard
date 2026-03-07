@@ -1,4 +1,8 @@
-/* IMPORT FONTS DIRECTLY IN CSS (Fallback in case UI head misses it) */
+/* =========================================
+   TRUE CRIME / POLICE DATABASE THEME
+   ========================================= */
+
+/* IMPORT FONTS DIRECTLY IN CSS */
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600;700&display=swap');
 
 html, body { 
@@ -6,32 +10,35 @@ html, body {
 }
 
 body {
-  /* Dark, gritty background like a terminal screen */
-  background: #0a0a0a !important;
-  color: #cccccc !important;
+  /* LIGHT BLACK WITH FADE (Smooth diagonal gradient) */
+  background: linear-gradient(135deg, #333333 0%, #111111 100%) !important;
+  background-attachment: fixed !important; /* Keeps the fade locked in place when scrolling */
+  color: #ffcc00 !important; /* Caution Yellow Main Text */
   font-family: 'Roboto Mono', monospace !important;
 }
 
-/* Hero (The main header) */
+/* =========================================
+   HERO (THE MAIN HEADER)
+   ========================================= */
 .app-hero {
   padding: 20px 18px 8px 18px;
 }
 .hero-inner {
-  border-radius: 2px; /* Sharp corners for brutalist/police feel */
+  border-radius: 4px; 
   padding: 18px 18px;
-  border: 1px solid #333333;
+  border: 1px solid #4a4a4a; /* Lighter border */
   border-top: 4px solid #8b0000; /* Blood red accent line */
-  background: #141414;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  background: rgba(40, 40, 40, 0.9); /* Soft charcoal */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 .hero-title {
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
   font-size: 46px;
   font-weight: 700;
-  letter-spacing: 2px; /* Spaced out for dramatic effect */
+  letter-spacing: 2px; 
   margin: 0;
-  color: #ffffff;
+  color: #ffcc00; /* Caution Yellow */
 }
 .hero-sub {
   display: flex;
@@ -40,35 +47,36 @@ body {
   margin-top: 10px;
 }
 .hero-pill {
-  /* Looks like an evidence tag or classification label */
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 0px; 
+  border-radius: 2px; 
   font-family: 'Roboto Mono', monospace;
   font-weight: 700;
   font-size: 12px;
   border: 1px solid #8b0000;
   background: rgba(139, 0, 0, 0.2);
-  color: #ff4d4d;
+  color: #ff4d4d; /* Bright red to pop */
   text-transform: uppercase;
 }
 .hero-muted {
-  color: #777777;
+  color: #cca300; /* Dimmed Yellow */
   font-weight: 600;
   font-size: 13px;
 }
 
-/* Sidebar glass -> Sidebar Terminal */
+/* =========================================
+   SIDEBAR TERMINAL
+   ========================================= */
 .sidebar-glass {
-  border-radius: 2px;
-  border: 1px solid #333333;
-  background: #111111;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+  border-radius: 4px;
+  border: 1px solid #4a4a4a;
+  background: rgba(35, 35, 35, 0.9);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
   padding: 14px;
 }
 .sidebar-title {
   margin-bottom: 10px;
-  border-bottom: 1px solid #333333;
+  border-bottom: 1px solid #4a4a4a;
   padding-bottom: 5px;
 }
 .sidebar-title-text {
@@ -76,22 +84,49 @@ body {
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 1px;
-  color: #ffffff;
+  color: #ffcc00; /* Caution Yellow */
 }
 .sidebar-actions {
   margin-top: 10px;
 }
 
-/* Cards (Data modules) */
+/* =========================================
+   CARDS (DATA MODULES)
+   ========================================= */
 .card-glass {
-  border-radius: 2px !important;
-  border: 1px solid #333333 !important;
-  background: #141414 !important;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5) !important;
+  border-radius: 4px !important;
+  border: 1px solid #4a4a4a !important;
+  background: rgba(40, 40, 40, 0.9) !important; /* Soft charcoal */
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
   overflow: hidden;
 }
 
-/* KPI (Key Performance Indicators - The Big Numbers) */
+/* Card titles */
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 16px 8px 16px;
+  border-bottom: 1px solid #333333;
+}
+.card-title {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 14px 16px 8px 16px;
+  color: #ffcc00; /* Caution Yellow */
+}
+.card-hint {
+  color: #cca300; /* Dimmed Yellow */
+  font-weight: 600;
+  padding-right: 16px;
+  font-size: 12px;
+}
+
+/* =========================================
+   KPI (THE BIG NUMBERS)
+   ========================================= */
 .kpi { 
   padding: 16px; 
 }
@@ -99,7 +134,7 @@ body {
   font-family: 'Oswald', sans-serif;
   text-transform: uppercase;
   font-weight: 500;
-  color: #888888;
+  color: #cca300; /* Dimmed Yellow */
   margin-bottom: 6px;
   letter-spacing: 1px;
 }
@@ -109,46 +144,25 @@ body {
   font-weight: 700;
   letter-spacing: -2px;
   line-height: 1.1;
-  color: #ff3333; /* Stark red for crime stats */
+  color: #ff4d4d; /* Keep the stark red for the actual crime stats */
 }
 .kpi-foot {
   margin-top: 6px;
-  color: #555555;
+  color: #cca300; /* Dimmed Yellow */
   font-weight: 600;
   font-size: 12px;
 }
 
-/* Card titles */
-.card-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 14px 16px 8px 16px;
-  border-bottom: 1px solid #222222;
-}
-.card-title {
-  font-family: 'Oswald', sans-serif;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 14px 16px 8px 16px;
-  color: #eeeeee;
-}
-.card-hint {
-  color: #666666;
-  font-weight: 600;
-  padding-right: 16px;
-  font-size: 12px;
-}
-
-/* Placeholder (When no data is selected) */
+/* =========================================
+   PLACEHOLDER (WHEN NO DATA SELECTED)
+   ========================================= */
 .placeholder-glass {
   margin: 6px 16px 16px 16px;
   padding: 22px;
-  border-radius: 2px;
-  border: 1px dashed #555555;
-  background: #0a0a0a;
-  color: #666666;
+  border-radius: 4px;
+  border: 1px dashed #666666;
+  background: rgba(25, 25, 25, 0.8);
+  color: #cca300; /* Dimmed Yellow */
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -158,30 +172,74 @@ body {
 /* Make fill page breathe */
 .bslib-page-fill { padding: 10px 16px 20px 16px; }
 
-/* Inputs polish (Dark mode dropdowns) */
-.selectize-control.multi .selectize-input {
+/* =========================================
+   POLICE TAPE DROPDOWNS (YELLOW & BLACK)
+   ========================================= */
+
+/* Selected City Tags */
+.selectize-control.multi .selectize-input > div {
+  background-color: #ffcc00 !important; 
+  color: #000000 !important; /* Black text on yellow background */
+  border: 1px solid #000000 !important;
   border-radius: 2px !important;
-  border: 1px solid #444444 !important;
-  background: #1a1a1a !important;
-  color: #ffffff !important;
-  box-shadow: none !important;
-}
-.selectize-control.multi .selectize-input.focus {
-  border-color: #8b0000 !important;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(139, 0, 0, 0.6) !important;
+  font-family: 'Roboto Mono', monospace !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
+/* Dropdown Menu Background */
+.selectize-dropdown {
+  background-color: #2b2b2b !important; /* Soft charcoal */
+  border: 2px solid #ffcc00 !important; 
+  border-radius: 2px !important; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6) !important;
+}
+
+/* Unselected options in the list */
+.selectize-dropdown .option {
+  color: #ffcc00 !important; 
+  font-family: 'Roboto Mono', monospace !important;
+  background-color: transparent !important;
+  border-bottom: 1px dashed #444444; 
+}
+
+/* Hover/Active option in the list */
+.selectize-dropdown .active {
+  background-color: #ffcc00 !important; 
+  color: #000000 !important; /* Flips to black text on yellow background */
+  font-weight: 700 !important;
+}
+
+/* Standard Dropdowns and Inputs */
+select.form-select, .form-control, .selectize-input {
+  background-color: #2b2b2b !important; 
+  color: #ffcc00 !important;
+  border: 1px solid #555555 !important;
+  border-radius: 2px !important;
+  font-family: 'Roboto Mono', monospace !important;
+}
+
+select.form-select:focus, .form-control:focus, .selectize-input.focus {
+  border-color: #ffcc00 !important;
+  box-shadow: 0 0 8px rgba(255, 204, 0, 0.4) !important;
+}
+
+/* =========================================
+   BUTTONS
+   ========================================= */
 .btn { 
   border-radius: 2px !important; 
   font-family: 'Oswald', sans-serif !important;
   text-transform: uppercase !important;
   letter-spacing: 1px;
   font-weight: 700 !important; 
-  background-color: #222222 !important;
-  border-color: #444444 !important;
-  color: #ffffff !important;
+  background-color: #333333 !important; 
+  border-color: #555555 !important;
+  color: #ffcc00 !important;
 }
 .btn:hover {
-  background-color: #8b0000 !important; /* Button turns red on hover */
+  background-color: #8b0000 !important; /* Turns red to indicate an action/warning */
   border-color: #8b0000 !important;
+  color: #ffffff !important;
 }
