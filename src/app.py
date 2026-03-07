@@ -497,7 +497,7 @@ def server(input, output, session):
         # Background layer
         background = alt.Chart(states).mark_geoshape(
             fill='lightgray', stroke='white', strokeWidth=1
-        ).project('albersUsa').properties(width='container', height=400)
+        ).project('albersUsa').properties(width='container', height='container')
         
         # Choropleth layer
         choropleth = alt.Chart(states).mark_geoshape(
