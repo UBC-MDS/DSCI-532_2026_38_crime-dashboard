@@ -339,7 +339,7 @@ def server(input, output, session):
             val = str(int(df.loc[idx, "year"]))
             return ui.h3(val, class_="kpi-val")
         except (KeyError, ValueError):
-            return ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.h3("Select a City", class_="kpi-val")
 
     @output
     @render.ui
@@ -350,7 +350,7 @@ def server(input, output, session):
         
         # Check 
         if col is None or df.empty:
-            return ui.h3("No Metric Selected", class_="kpi-val")
+            return ui.h3("Select a City", class_="kpi-val")
 
         # 3. Calculate mean safely
         try:
@@ -445,7 +445,7 @@ def server(input, output, session):
     
         if input.crime_type() == "None":
             return ui.div(style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;", 
-                      children="Map hidden. Select a metric to visualize."), ui.h3("No Metric Selected", class_="kpi-val")
+                      children="Map hidden. Select a metric to visualize."), ui.h3("Select a City", class_="kpi-val")
 
         
         # Use full dataset for map (not filtered by cities)
