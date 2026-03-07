@@ -44,12 +44,7 @@ qc = QueryChat(
 
 # UI
 
-app_ui = ui.page_navbar(
-    #  Tab 1: Original Dashboard 
-    ui.nav_panel(
-        "Dashboard",
-        ui.page_fillable(
-            ui.tags.head(
+
 app_ui = ui.page_fillable(
     
     ui.tags.head(
@@ -132,70 +127,6 @@ app_ui = ui.page_fillable(
                 ui.h2("CRIME TRENDS"),
                 ui.div(
                     {"class": "header-sub"},
-                    ui.span("(1975–2015)", class_="chip"),
-                    ui.span(" Rates per 100k residents • U.S. departments", class_="muted"),
-                ),
-            ),
-            ui.layout_sidebar(
-                ui.sidebar(
-                    {"class": "sidebar-card"},
-                    ui.h6("Filters", class_="sidebar-title"),
-                    ui.input_selectize(
-                        "city",
-                        "Select City (max 6)",
-                        choices=sorted(crimes_df["department_name"].unique()),
-                        multiple=True,
-                        options={"placeholder": "Type to search cities...", "maxItems": 6},
-                    ),
-                    ui.input_slider(
-                        "year_range",
-                        "Year Range",
-                        min=int(crimes_df["year"].min()),
-                        max=int(crimes_df["year"].max()),
-                        value=(int(crimes_df["year"].min()), int(crimes_df["year"].max())),
-                        step=1,
-                    ),
-                    ui.hr(),
-                    ui.h6("Map Controls", class_="sidebar-title"),
-                    ui.input_slider(
-                        "map_year",
-                        "Map Year",
-                        min=int(crimes_df["year"].min()),
-                        max=int(crimes_df["year"].max()),
-                        value=int(crimes_df["year"].max()),
-                        step=5,
-                        sep=""
-                    ),
-                    ui.input_select(
-                        "map_color_scheme",
-                        "Color Scheme",
-                        choices={
-                            "None": "Select Color",
-                            "orangered": "Orange-Red",
-                            "reds": "Reds",
-                            "blues": "Blues",
-                            "purples": "Purples"
-                        },
-                        selected="None"
-                    ),
-                    ui.input_select(
-                        "crime_type",
-                        "Crime Metric",
-                        choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                        selected="None"
-                    ),
-                    ui.input_action_button(
-                        "reset",
-                        "RESET",
-                        icon=icon_svg("rotate-left"),
-                        class_="btn btn-dark w-100 reset-btn",
-                    ),
-                ),
-                ui.layout_columns(
-                    ui.card(
-                        {"class": "kpi-card"},
-                        ui.card_header("Peak Crime Year"),
-                        ui.output_ui("peak_year"),
                     ),
                     ui.card(
                         {"class": "kpi-card"},
@@ -282,7 +213,6 @@ app_ui = ui.page_fillable(
             ui.p("You can add new charts, tables, or maps here.")
         )
     )
-)
 
 
 # Server
@@ -516,7 +446,6 @@ def server(input, output, session):
         df = filtered_df()
         col = selected_column()
         req(col is not None)
-        fig, ax = plt.subplots(figsize=(10, 4.8))
         fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
 
         if not input.city():
@@ -569,10 +498,7 @@ def server(input, output, session):
             return ui.div(
                 style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;",
                 children="Map hidden. Select a metric to visualize."
-            ), ui.h3("No Metric Selected", class_="kpi-val")
-            return ui.div(style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;", 
-                      children="Map hidden. Select a metric to visualize."), ui.h3("Select a City", class_="kpi-val")
-
+    )
         
         # Use full dataset for map (not filtered by cities)
         state_data = prepare_state_data(crimes_df, year, col)
@@ -609,12 +535,10 @@ def server(input, output, session):
             lookup='id',
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
         ).project('albersUsa').properties(
-            width='container', height=400,
-            title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14}
             width='container',
             height=400,
-            title="Geographic Distribution by State"
-        )
+            title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14}
+)
         final_map = background + choropleth
         return ui.HTML(final_map.to_html())
 
@@ -622,7 +546,6 @@ def server(input, output, session):
 
     # AI EXPLORER TAB SERVER LOGIC
    
-
     # Initialize querychat — returns object with reactive .df() method
     qc_vals = qc.server()
 
