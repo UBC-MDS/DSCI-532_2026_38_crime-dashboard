@@ -99,21 +99,10 @@ app_ui = ui.page_fillable(
                         sep=""
                     ),
                     ui.input_select(
-                        "map_color_scheme",
-                        "Color Scheme",
-                        choices={
-                            "orangered": "Orange-Red",
-                            "reds": "Reds",
-                            "blues": "Blues",
-                            "purples": "Purples"
-                        },
-                        selected="orangered"
-                    ),
-                    ui.input_select(
                         "crime_type",
                         "Crime Metric",
-                        choices=["Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                        selected="Violent Crime"
+                        choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
+                        selected="None"
                     ),
                     ui.input_action_button(
                         "reset",
@@ -215,7 +204,11 @@ def server(input, output, session):
     
 
     def selected_column():
-    
+    # Safety check to prevent KeyError
+        crime = input.crime_type()
+        if crime == "None":
+            return None
+        
         mapping = {
             "Violent Crime": "violent_per_100k",
             "Homicide": "homs_per_100k",
@@ -223,7 +216,7 @@ def server(input, output, session):
             "Robbery": "rob_per_100k",
             "Aggravated Assault": "agg_ass_per_100k",
         }
-        return mapping[input.crime_type()]
+        return mapping.get(crime)
 
     @reactive.effect
     @reactive.event(input.reset)
@@ -233,9 +226,8 @@ def server(input, output, session):
             "year_range",
             value=(int(crimes_df["year"].min()), int(crimes_df["year"].max())),
         )
-        ui.update_select("crime_type", selected="Violent Crime")
+        ui.update_select("crime_type", selected="None")
         ui.update_slider("map_year", value=int(crimes_df["year"].max()))
-        ui.update_select("map_color_scheme", selected="Reds")
 
 
     @reactive.calc
@@ -475,12 +467,20 @@ def server(input, output, session):
     def choropleth_map():
         """Render choropleth map showing crime rates by state."""
         
-        # Use req() to ensure inputs are ready
-        year = req(input.map_year())
-        crime_type = req(input.crime_type())
-        color_scheme = req(input.map_color_scheme())
+        crime_type = input.crime_type()
+
+        # 1. Handle the "Rest/None" state
+        if crime_type == "None":
+            return ui.div(
+                ui.h4("Map Reset"),
+                ui.p("Select a Crime Metric to visualize the map."),
+                style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 10px;"
+            )
         
+        year = input.map_year()
         col = selected_column()
+
+        req(col)
         
         # Use full dataset for map (not filtered by cities)
         state_data = prepare_state_data(crimes_df, year, col)
@@ -506,7 +506,7 @@ def server(input, output, session):
             color=alt.Color(
                 'crime_rate:Q',
                 scale=alt.Scale(
-                    scheme=color_scheme,
+                    scheme='reds',
                     domain=[0, state_data['crime_rate'].max()]
                 ),
                 legend=alt.Legend(
@@ -524,7 +524,7 @@ def server(input, output, session):
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
         ).project('albersUsa').properties(
             width='container',
-            height=400,
+            height='container',
             title={"text": f"{crime_type} Rate by State — {year}", "fontSize": 14}
         )
         
