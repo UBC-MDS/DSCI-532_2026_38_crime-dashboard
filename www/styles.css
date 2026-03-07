@@ -1,143 +1,187 @@
+/* IMPORT FONTS DIRECTLY IN CSS (Fallback in case UI head misses it) */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600;700&display=swap');
 
-
-html, body { height: 100%; }
-
-body{
-  background:
-    radial-gradient(900px 520px at 10% 0%, rgba(181, 134, 255, 0.18), transparent 55%),
-    radial-gradient(900px 520px at 90% 10%, rgba(0, 212, 255, 0.14), transparent 55%),
-    radial-gradient(1000px 700px at 55% 110%, rgba(255, 199, 0, 0.10), transparent 55%),
-    #f6f7fb !important;
+html, body { 
+  height: 100%; 
 }
 
-/* Hero */
-.app-hero{
+body {
+  /* Dark, gritty background like a terminal screen */
+  background: #0a0a0a !important;
+  color: #cccccc !important;
+  font-family: 'Roboto Mono', monospace !important;
+}
+
+/* Hero (The main header) */
+.app-hero {
   padding: 20px 18px 8px 18px;
 }
-.hero-inner{
-  border-radius: 22px;
+.hero-inner {
+  border-radius: 2px; /* Sharp corners for brutalist/police feel */
   padding: 18px 18px;
-  border: 1px solid rgba(15,23,42,0.08);
-  background: rgba(255,255,255,0.80);
-  box-shadow: 0 18px 45px rgba(15,23,42,0.08);
-  backdrop-filter: blur(10px);
+  border: 1px solid #333333;
+  border-top: 4px solid #8b0000; /* Blood red accent line */
+  background: #141414;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
 }
-.hero-title{
+.hero-title {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
   font-size: 46px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: 2px; /* Spaced out for dramatic effect */
   margin: 0;
+  color: #ffffff;
 }
-.hero-sub{
+.hero-sub {
   display: flex;
   gap: 10px;
   align-items: center;
   margin-top: 10px;
 }
-.hero-pill{
+.hero-pill {
+  /* Looks like an evidence tag or classification label */
   display: inline-block;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 13px;
-  border: 1px solid rgba(15,23,42,0.12);
-  background: rgba(255,255,255,0.85);
+  padding: 4px 10px;
+  border-radius: 0px; 
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1px solid #8b0000;
+  background: rgba(139, 0, 0, 0.2);
+  color: #ff4d4d;
+  text-transform: uppercase;
 }
-.hero-muted{
-  color: rgba(15,23,42,0.55);
+.hero-muted {
+  color: #777777;
   font-weight: 600;
+  font-size: 13px;
 }
 
-/* Sidebar glass */
-.sidebar-glass{
-  border-radius: 22px;
-  border: 1px solid rgba(15,23,42,0.08);
-  background: rgba(255,255,255,0.82);
-  box-shadow: 0 18px 45px rgba(15,23,42,0.08);
-  backdrop-filter: blur(10px);
+/* Sidebar glass -> Sidebar Terminal */
+.sidebar-glass {
+  border-radius: 2px;
+  border: 1px solid #333333;
+  background: #111111;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
   padding: 14px;
 }
-.sidebar-title{
+.sidebar-title {
   margin-bottom: 10px;
+  border-bottom: 1px solid #333333;
+  padding-bottom: 5px;
 }
-.sidebar-title-text{
-  font-weight: 900;
-  letter-spacing: -0.02em;
+.sidebar-title-text {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffffff;
 }
-.sidebar-actions{
+.sidebar-actions {
   margin-top: 10px;
 }
 
-/* Cards */
-.card-glass{
-  border-radius: 22px !important;
-  border: 1px solid rgba(15,23,42,0.08) !important;
-  background: rgba(255,255,255,0.84) !important;
-  box-shadow: 0 18px 45px rgba(15,23,42,0.08) !important;
-  backdrop-filter: blur(10px);
+/* Cards (Data modules) */
+.card-glass {
+  border-radius: 2px !important;
+  border: 1px solid #333333 !important;
+  background: #141414 !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5) !important;
   overflow: hidden;
 }
 
-/* KPI */
-.kpi { padding: 16px; }
-.kpi-label{
-  font-weight: 800;
-  color: rgba(15,23,42,0.70);
+/* KPI (Key Performance Indicators - The Big Numbers) */
+.kpi { 
+  padding: 16px; 
+}
+.kpi-label {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #888888;
   margin-bottom: 6px;
+  letter-spacing: 1px;
 }
-.kpi-value{
+.kpi-value {
+  font-family: 'Roboto Mono', monospace;
   font-size: 40px;
-  font-weight: 950;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -2px;
   line-height: 1.1;
+  color: #ff3333; /* Stark red for crime stats */
 }
-.kpi-foot{
+.kpi-foot {
   margin-top: 6px;
-  color: rgba(15,23,42,0.55);
+  color: #555555;
   font-weight: 600;
+  font-size: 12px;
 }
 
 /* Card titles */
-.card-title-row{
-  display:flex;
+.card-title-row {
+  display: flex;
   justify-content: space-between;
   align-items: baseline;
   padding: 14px 16px 8px 16px;
+  border-bottom: 1px solid #222222;
 }
-.card-title{
-  font-weight: 900;
-  letter-spacing: -0.02em;
+.card-title {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
   padding: 14px 16px 8px 16px;
+  color: #eeeeee;
 }
-.card-hint{
-  color: rgba(15,23,42,0.55);
+.card-hint {
+  color: #666666;
   font-weight: 600;
   padding-right: 16px;
+  font-size: 12px;
 }
 
-/* Placeholder */
-.placeholder-glass{
+/* Placeholder (When no data is selected) */
+.placeholder-glass {
   margin: 6px 16px 16px 16px;
   padding: 22px;
-  border-radius: 18px;
-  border: 1px dashed rgba(15,23,42,0.18);
-  background: rgba(249,250,251,0.65);
-  color: rgba(15,23,42,0.55);
-  font-weight: 650;
+  border-radius: 2px;
+  border: 1px dashed #555555;
+  background: #0a0a0a;
+  color: #666666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
 }
 
 /* Make fill page breathe */
 .bslib-page-fill { padding: 10px 16px 20px 16px; }
 
-/* Inputs polish */
-.selectize-control.multi .selectize-input{
-  border-radius: 14px !important;
-  border: 1px solid rgba(15,23,42,0.14) !important;
+/* Inputs polish (Dark mode dropdowns) */
+.selectize-control.multi .selectize-input {
+  border-radius: 2px !important;
+  border: 1px solid #444444 !important;
+  background: #1a1a1a !important;
+  color: #ffffff !important;
   box-shadow: none !important;
 }
-.selectize-control.multi .selectize-input.focus{
-  border-color: rgba(17,17,17,0.55) !important;
-  box-shadow: 0 0 0 0.18rem rgba(17,17,17,0.10) !important;
+.selectize-control.multi .selectize-input.focus {
+  border-color: #8b0000 !important;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(139, 0, 0, 0.6) !important;
 }
 
-.btn{ border-radius: 14px !important; font-weight: 800 !important; }
+.btn { 
+  border-radius: 2px !important; 
+  font-family: 'Oswald', sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px;
+  font-weight: 700 !important; 
+  background-color: #222222 !important;
+  border-color: #444444 !important;
+  color: #ffffff !important;
+}
+.btn:hover {
+  background-color: #8b0000 !important; /* Button turns red on hover */
+  border-color: #8b0000 !important;
+}

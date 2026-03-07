@@ -50,11 +50,18 @@ app_ui = ui.page_fillable(
     ui.tags.head(
         ui.tags.link(
             rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
+            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/cyborg/bootstrap.min.css",
         ),
+        ui.tags.link(rel="preconnect", href="https://fonts.googleapis.com"),
+        ui.tags.link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin="anonymous"),
+        ui.tags.link(
+            href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600&display=swap", 
+            rel="stylesheet"
+        ),
+
         ui.include_css("www/styles.css"),
 
-        # --- ADD THESE 3 LINES TO PRELOAD THE MAP SCRIPTS ---
+        # --- LINES TO PRELOAD THE MAP SCRIPTS ---
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@5"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-embed@6"),
