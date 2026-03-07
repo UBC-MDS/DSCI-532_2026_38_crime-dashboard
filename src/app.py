@@ -122,20 +122,6 @@ app_ui = ui.page_fillable(
                 icon=icon_svg("rotate-left"), # Adds a reset arrow icon
                 class_="btn btn-dark w-100 reset-btn",
             ),
-            ui.div(
-                {"class": "app-header"},
-                ui.h2("CRIME TRENDS"),
-                ui.div(
-                    {"class": "header-sub"},
-                    ),
-                    ui.card(
-                        {"class": "kpi-card"},
-                        ui.card_header("Average Rate"),
-                        ui.output_ui("crime_rate"),
-                        ui.div("per 100k residents", class_="kpi-sub"),
-                    ),
-                    col_widths=(7, 5),
-                ),
                 ui.card(
                     {"class": "plot-card"},
                     ui.card_header(
