@@ -66,6 +66,8 @@ kiwisolver==1.4.9
 pillow==12.1.1
 pyparsing==3.3.2
 
+#AI chatbot dependencies    
 querychat
 chatlas
 python-dotenv
+anthropic
