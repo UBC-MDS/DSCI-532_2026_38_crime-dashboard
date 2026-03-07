@@ -533,9 +533,7 @@ def server(input, output, session):
         ).project('albersUsa').properties(
             width='container', height=400,
             title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14},
-            width='container',
-            height=400,
-            title="Geographic Distribution by State"
+            height=400
         )
         final_map = background + choropleth
         return ui.HTML(final_map.to_html())
