@@ -15,6 +15,31 @@ This interactive crime dashboard visualizes annual crime data from 1975 to 2015 
 
 <img src="/img/demo.gif" alt="Dashboard Demo" width="1000">
 
+## AI Explorer Tab
+
+The dashboard includes an AI-powered tab that lets users query the crime dataset
+using natural language, powered by [querychat](https://github.com/posit-dev/querychat)
+and Anthropic's Claude.
+
+**Features:**
+- Natural language chat interface to filter and explore crime data
+- Reactive data table showing filtered results
+- Two interactive Altair visualizations (crime trend over time + city comparison bar chart)
+- Download button to export the filtered dataset as CSV
+
+**API Key Setup:**
+
+The AI tab requires an Anthropic API key to function.
+
+1. Create a `.env` file in the project root:
+```
+   ANTHROPIC_API_KEY=your-key-here
+```
+2. Make sure `.env` is listed in `.gitignore` (never commit your key).
+3. For deployment on Posit Connect Cloud, set `ANTHROPIC_API_KEY` as an
+   environment variable in the deployment settings.
+   
+   
 ## Instructions for Local Use
 
 1. Clone the repository
