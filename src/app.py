@@ -497,7 +497,7 @@ def server(input, output, session):
         # Background layer
         background = alt.Chart(states).mark_geoshape(
             fill='lightgray', stroke='white', strokeWidth=1
-        ).project('albersUsa').properties(width='container', height='container')
+        ).project('albersUsa')
         
         # Choropleth layer
         choropleth = alt.Chart(states).mark_geoshape(
@@ -522,13 +522,19 @@ def server(input, output, session):
         ).transform_lookup(
             lookup='id',
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
-        ).project('albersUsa').properties(
-            width='container',
-            height='container',
-            title={"text": f"{crime_type} Rate by State — {year}", "fontSize": 14}
-        )
+        ).project('albersUsa')
         
-        final_map = background + choropleth
+        final_map = (background + choropleth).properties(
+            width='container',
+            height=400,
+            title={"text": f"{crime_type} Rate by State — {year}", "fontSize": 14}
+        ).configure_autosize(
+            type='fit',
+            contains='padding'
+        ).configure_view(
+            strokeWidth=0 # Removes the outer border box
+        )
+    
         return ui.HTML(final_map.to_html())
 
 
