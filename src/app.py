@@ -368,17 +368,12 @@ def server(input, output, session):
             ax.set_axis_off()
             return fig
 
-        # Create consistent color mapping for selected cities
-        colors = plt.cm.tab10.colors
-        selected_cities = sorted(input.city())
-        city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
-
         for city, group in df.groupby("department_name"):
-            ax.plot(group["year"], group[col], label=city, color=city_colors[city])
+            ax.plot(group["year"], group[col], label=city)
 
         ax.set_xlabel("Year")
         ax.set_ylabel("Rate per 100k")
-        ax.set_title(f"{input.crime_type()} Trend Over Time")
+        ax.set_title(f"{input.crime_type()} Trend")
 
         # only show legend if not too many cities
         if len(input.city()) <= 6:
@@ -393,7 +388,7 @@ def server(input, output, session):
         df = filtered_df()
         col = selected_column()
         req(col is not None)
-        fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
+        fig, ax = plt.subplots(figsize=(10, 4.8))
 
         if not input.city():
             ax.text(0.5, 0.5, "Select 1+ cities to compare", ha="center", va="center")
@@ -408,21 +403,16 @@ def server(input, output, session):
         summary = (
             df.groupby("department_name", as_index=False)[col]
             .mean()
-            .sort_values(col, ascending=True)
+            .sort_values(col, ascending=False)
         )
 
-        # Create consistent color mapping for selected cities (same as trend plot)
-        colors = plt.cm.tab10.colors
-        selected_cities = sorted(input.city())
-        city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
-        bar_colors = [city_colors[city] for city in summary["department_name"]]
+        ax.bar(summary["department_name"], summary[col])
+        ax.set_ylabel("Average rate per 100k")
+        start, end = input.year_range()
+        ax.set_title(f"{input.crime_type()} Average ({start}–{end})")
+        ax.tick_params(axis="x", rotation=35)
 
-        ax.barh(summary["department_name"], summary[col], color=bar_colors)
-        ax.set_xlabel("Average rate per 100k", fontsize=9)
-        ax.set_title("City Comparison", fontsize=10)
-        ax.tick_params(axis='y', labelsize=8)
-        ax.tick_params(axis='x', labelsize=8)
-
+        fig.tight_layout()
         return fig
     
 
@@ -503,7 +493,10 @@ def server(input, output, session):
         ).project('albersUsa').properties(
             width='container',
             height=400,
-            title="Geographic Distribution by State"
+            title={
+                "text": f"{input.crime_type()} Rate by State — {year}",
+                "fontSize": 14
+            }
         )
         
         # Combine layers
