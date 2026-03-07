@@ -467,21 +467,29 @@ def server(input, output, session):
     def choropleth_map():
         """Render choropleth map showing crime rates by state."""
       
-        current_metric = input.crime_type()
-        current_year = input.map_year()
+        crime_type = input.crime_type()
+        year = input.map_year()
 
         # 1. Handle the "Rest/None" state
-        if current_metric == "None":
+        if crime_type == "None":
             return ui.div(
                 ui.h4("Map Reset"),
                 ui.p("Select a Crime Metric to visualize the map."),
                 style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 10px;"
-        )
-        col = selected_column()
-        req(col)
+            )
         
-        # Use full dataset for map (not filtered by cities)
-        state_data = prepare_state_data(crimes_df, current_year, col)
+        # 2. Local mapping (Do NOT call selected_column here)
+        mapping = {
+            "Violent Crime": "violent_per_100k",
+            "Homicide": "homs_per_100k",
+            "Rape": "rape_per_100k",
+            "Robbery": "rob_per_100k",
+            "Aggravated Assault": "agg_ass_per_100k",
+        }
+        col = mapping.get(crime_type)
+        
+        # 3. Use 'year' here, NOT crime_type
+        state_data = prepare_state_data(crimes_df, year, col)
         
         if state_data.empty:
             return ui.div(
@@ -489,15 +497,15 @@ def server(input, output, session):
                 style="text-align: center; padding: 50px; color: #999;"
             )
         
-        # Load US states geography
+        # 4. Load US states geography
         states = alt.topo_feature(vega_data.us_10m.url, 'states')
         
-        # Background layer
+        # 5. Background layer
         background = alt.Chart(states).mark_geoshape(
             fill='lightgray', stroke='white', strokeWidth=1
         ).project('albersUsa')
         
-        # Choropleth layer
+        # 6. Choropleth layer
         choropleth = alt.Chart(states).mark_geoshape(
             stroke='white', strokeWidth=1
         ).encode(
@@ -522,18 +530,13 @@ def server(input, output, session):
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
         ).project('albersUsa')
         
-        # 1. Combine the layers first
-        combined_chart = background + choropleth
-
-        # 2. Apply properties and configurations to the combined object
-        final_map = combined_chart.properties(
+        # 7. Use alt.layer for Posit Connect Cloud stability
+        final_map = alt.layer(background, choropleth).properties(
             width='container',
             height=400,
-            title=f"{current_metric} Rate by State — {current_year}"
-        ).configure(
-            # Using the dictionary-style configuration is more compatible across versions
-            autosize=alt.AutoSizeParams(type='fit', contains='padding'),
-            view=alt.ViewConfig(strokeWidth=0)
+            title=f"{crime_type} Rate by State — {year}"
+        ).configure_view(
+            strokeWidth=0
         )
     
         return ui.HTML(final_map.to_html())
