@@ -202,7 +202,7 @@ def server(input, output, session):
 
     # ORIGINAL DASHBOARD SERVER LOGIC (unchanged)
     
-
+    @reactive.calc
     def selected_column():
     # Safety check to prevent KeyError
         crime = input.crime_type()
@@ -466,9 +466,7 @@ def server(input, output, session):
     @render.ui
     def choropleth_map():
         """Render choropleth map showing crime rates by state."""
-        year = input.map_year()
-        col = selected_column()
-
+      
         crime_type = input.crime_type()
 
         # 1. Handle the "Rest/None" state
@@ -479,7 +477,8 @@ def server(input, output, session):
                 style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 10px;"
             )
         
-        
+        year = input.map_year()
+        col = selected_column()
 
         req(col)
         
