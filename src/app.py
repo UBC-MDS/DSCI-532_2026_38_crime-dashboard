@@ -33,7 +33,7 @@ crimes_df = pd.read_csv(DATA_PATH)
 
 #  QueryChat Setup 
 # Create a QueryChat instance for the AI tab
-# Uses ANTHROPIC_API_KEY from your .env file automatically
+# Use ANTHROPIC_API_KEY from .env file automatically
 qc = QueryChat(
     crimes_df,
     "crime_data",
@@ -44,89 +44,34 @@ qc = QueryChat(
 
 # UI
 
-app_ui = ui.page_navbar(
-    #  Tab 1: Original Dashboard 
-    ui.nav_panel(
-        "Dashboard",
-        ui.page_fillable(
-            ui.tags.head(
+#app wasnt showing anything
 app_ui = ui.page_fillable(
     
     ui.tags.head(
-                ui.tags.link(
-                    rel="stylesheet",
-                    href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
-                ),
-                ui.include_css("www/styles.css"),
-            ),
+        ui.tags.link(
+            rel="stylesheet",
+            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/cyborg/bootstrap.min.css",
+        ),
+        ui.tags.link(rel="preconnect", href="https://fonts.googleapis.com"),
+        ui.tags.link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin="anonymous"),
+        ui.tags.link(
+            href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600&display=swap", 
+            rel="stylesheet"
+        ),
+
+        ui.include_css("www/styles.css"),
+
+        # --- LINES TO PRELOAD THE MAP SCRIPTS ---
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@5"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-embed@6"),
+        # ----------------------------------------------------
+    ),
     
     ui.navset_tab(
-
+        # Tab 1: Crime Dashboard
         ui.nav_panel(
             "Crime Dashboard",
-            ui.div(
-        {"class": "app-header"},
-        ui.h2("CRIME TRENDS"),
-        ui.div(
-            {"class": "header-sub"},
-            ui.span("(1975–2015)", class_="chip"),
-            ui.span(" Rates per 100k residents • U.S. departments", class_="muted"),
-        ),
-    ),
-    ui.layout_sidebar(
-        ui.sidebar(
-            {"class": "sidebar-card"},
-            ui.h6("Filters", class_="sidebar-title"),
-            ui.input_selectize(
-                "city",
-                "Select City (max 6)",
-                choices=sorted(crimes_df["department_name"].unique()),
-                multiple=True,
-                options={"placeholder": "Type to search cities...", "maxItems": 6},
-            ),
-            ui.input_slider(
-                "year_range",
-                "Year Range",
-                min=int(crimes_df["year"].min()),
-                max=int(crimes_df["year"].max()),
-                value=(int(crimes_df["year"].min()), int(crimes_df["year"].max())),
-                step=1,
-            ),
-            ui.hr(),
-            ui.h6("Map Controls", class_="sidebar-title"),
-            ui.input_slider(
-                "map_year",
-                "Map Year",
-                min=int(crimes_df["year"].min()),
-                max=int(crimes_df["year"].max()),
-                value=int(crimes_df["year"].max()),
-                step=5,
-                sep=""
-            ),
-            ui.input_select(
-                "map_color_scheme",
-                "Color Scheme",
-                choices={
-                    "None": "Select Color",
-                    "orangered": "Orange-Red",
-                    "reds": "Reds",
-                    "blues": "Blues",
-                    "purples": "Purples"
-                },
-                selected="None"
-            ),
-            ui.input_select(
-                "crime_type",
-                "Crime Metric",
-                choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                selected="None"
-            ),
-            ui.input_action_button(
-                "reset",
-                "RESET",
-                icon=icon_svg("rotate-left"), # Adds a reset arrow icon
-                class_="btn btn-dark w-100 reset-btn",
-            ),
             ui.div(
                 {"class": "app-header"},
                 ui.h2("CRIME TRENDS"),
@@ -167,18 +112,6 @@ app_ui = ui.page_fillable(
                         sep=""
                     ),
                     ui.input_select(
-                        "map_color_scheme",
-                        "Color Scheme",
-                        choices={
-                            "None": "Select Color",
-                            "orangered": "Orange-Red",
-                            "reds": "Reds",
-                            "blues": "Blues",
-                            "purples": "Purples"
-                        },
-                        selected="None"
-                    ),
-                    ui.input_select(
                         "crime_type",
                         "Crime Metric",
                         choices=["None","Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
@@ -191,6 +124,7 @@ app_ui = ui.page_fillable(
                         class_="btn btn-dark w-100 reset-btn",
                     ),
                 ),
+                # Main content area
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
@@ -233,55 +167,45 @@ app_ui = ui.page_fillable(
                 ),
             ),
         ),
-    ),
 
-    #  Tab 2: AI Explorer 
-    ui.nav_panel(
-        "AI Explorer",
-        ui.page_sidebar(
-            ui.sidebar(qc.ui()),
-            # Main content area
-            ui.layout_columns(
-                ui.card(
-                    {"class": "kpi-card"},
-                    ui.card_header("Rows in Filtered Data"),
-                    ui.output_ui("ai_row_count"),
-                ),
-                ui.card(
-                    {"class": "kpi-card"},
-                    ui.card_header("Cities in Filtered Data"),
-                    ui.output_ui("ai_city_count"),
-                ),
-                col_widths=(6, 6),
-            ),
-            ui.layout_columns(
-                ui.card(
-                    ui.card_header("Violent Crime Trend Over Time"),
-                    ui.output_ui("ai_trend_chart"),
-                ),
-                ui.card(
-                    ui.card_header("Crime Rate by City"),
-                    ui.output_ui("ai_city_bar_chart"),
-                ),
-                col_widths=(6, 6),
-            ),
-            ui.card(
-                ui.card_header("Filtered Crime Data"),
-                ui.output_data_frame("ai_data_table"),
-                ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
-            ),
-        ),
-    ),
-
-    title="Crime Trends Dashboard",
-    fillable=True,
-        ),
+        # Tab 2: AI Explorer
         ui.nav_panel(
-            "Analysis Page",
-            ui.h3("Chatbot"),
-            ui.p("You can add new charts, tables, or maps here.")
-        )
-    )
+            "AI Explorer",
+            ui.page_sidebar(
+                ui.sidebar(qc.ui()),
+                # Main content area
+                ui.layout_columns(
+                    ui.card(
+                        {"class": "kpi-card"},
+                        ui.card_header("Rows in Filtered Data"),
+                        ui.output_ui("ai_row_count"),
+                    ),
+                    ui.card(
+                        {"class": "kpi-card"},
+                        ui.card_header("Cities in Filtered Data"),
+                        ui.output_ui("ai_city_count"),
+                    ),
+                    col_widths=(6, 6),
+                ),
+                ui.layout_columns(
+                    ui.card(
+                        ui.card_header("Violent Crime Trend Over Time"),
+                        ui.output_ui("ai_trend_chart"),
+                    ),
+                    ui.card(
+                        ui.card_header("Crime Rate by City"),
+                        ui.output_ui("ai_city_bar_chart"),
+                    ),
+                    col_widths=(6, 6),
+                ),
+                ui.card(
+                    ui.card_header("Filtered Crime Data"),
+                    ui.output_data_frame("ai_data_table"),
+                    ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
+                ),
+            ),
+        ),
+    ),
 )
 
 
@@ -291,12 +215,13 @@ def server(input, output, session):
 
     # ORIGINAL DASHBOARD SERVER LOGIC (unchanged)
     
-
+    @reactive.calc
     def selected_column():
-
-        if input.crime_type() == "None":
+    # Safety check to prevent KeyError
+        crime = input.crime_type()
+        if crime == "None":
             return None
-    
+        
         mapping = {
             "Violent Crime": "violent_per_100k",
             "Homicide": "homs_per_100k",
@@ -304,7 +229,7 @@ def server(input, output, session):
             "Robbery": "rob_per_100k",
             "Aggravated Assault": "agg_ass_per_100k",
         }
-        return mapping[input.crime_type()]
+        return mapping.get(crime)
 
     @reactive.effect
     @reactive.event(input.reset)
@@ -316,7 +241,6 @@ def server(input, output, session):
         )
         ui.update_select("crime_type", selected="None")
         ui.update_slider("map_year", value=int(crimes_df["year"].max()))
-        ui.update_select("map_color_scheme", selected="None")
 
 
     @reactive.calc
@@ -453,7 +377,7 @@ def server(input, output, session):
             val = str(int(df.loc[idx, "year"]))
             return ui.h3(val, class_="kpi-val")
         except (KeyError, ValueError):
-            return ui.h3("Select a City", class_="kpi-val")
+            return ui.h6("Select a type of Crime", class_="kpi-val")
 
     @output
     @render.ui
@@ -461,8 +385,7 @@ def server(input, output, session):
         col = selected_column()
         df = filtered_df()
         if col is None or df.empty:
-            return ui.h3("No Metric Selected", class_="kpi-val")
-            return ui.h3("Select a City", class_="kpi-val")
+            return ui.h6("Select a type of Crime", class_="kpi-val")
 
         # 3. Calculate mean safely
         try:
@@ -478,25 +401,23 @@ def server(input, output, session):
         col = selected_column()
         req(col is not None)
         fig, ax = plt.subplots(figsize=(10, 4.8))
+        
         if not input.city():
             ax.text(0.5, 0.5, "Select 1+ cities to view trends", ha="center", va="center")
             ax.set_axis_off()
             return fig
+        
         if df.empty:
             ax.text(0.5, 0.5, "No data for selected filters", ha="center", va="center")
             ax.set_axis_off()
             return fig
-        for city, group in df.groupby("department_name"):
-            ax.plot(group["year"], group[col], label=city)
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Rate per 100k")
-        ax.set_title(f"{input.crime_type()} Trend")
-
+        
         # Create consistent color mapping for selected cities
         colors = plt.cm.tab10.colors
         selected_cities = sorted(input.city())
         city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
 
+        # Plot once with colors
         for city, group in df.groupby("department_name"):
             ax.plot(group["year"], group[col], label=city, color=city_colors[city])
 
@@ -504,9 +425,10 @@ def server(input, output, session):
         ax.set_ylabel("Rate per 100k")
         ax.set_title(f"{input.crime_type()} Trend Over Time")
 
-        # only show legend if not too many cities
+        # Only show legend if not too many cities
         if len(input.city()) <= 6:
             ax.legend()
+        
         fig.tight_layout()
         return fig
 
@@ -516,35 +438,34 @@ def server(input, output, session):
         df = filtered_df()
         col = selected_column()
         req(col is not None)
-        fig, ax = plt.subplots(figsize=(10, 4.8))
+        
+        # Create figure once
         fig, ax = plt.subplots(figsize=(6, 4), constrained_layout=True)
 
         if not input.city():
             ax.text(0.5, 0.5, "Select 1+ cities to compare", ha="center", va="center")
             ax.set_axis_off()
             return fig
+        
         if df.empty:
             ax.text(0.5, 0.5, "No data for selected filters", ha="center", va="center")
             ax.set_axis_off()
             return fig
+        
+        # Get summary data
         summary = (
             df.groupby("department_name", as_index=False)[col]
             .mean()
             .sort_values(col, ascending=True)
         )
-        ax.bar(summary["department_name"], summary[col])
-        ax.set_ylabel("Average rate per 100k")
-        start, end = input.year_range()
-        ax.set_title(f"{input.crime_type()} Average ({start}–{end})")
-        ax.tick_params(axis="x", rotation=35)
-        fig.tight_layout()
-
+        
         # Create consistent color mapping for selected cities (same as trend plot)
         colors = plt.cm.tab10.colors
         selected_cities = sorted(input.city())
         city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
         bar_colors = [city_colors[city] for city in summary["department_name"]]
 
+        # Plot horizontal bars once
         ax.barh(summary["department_name"], summary[col], color=bar_colors)
         ax.set_xlabel("Average rate per 100k", fontsize=9)
         ax.set_title("City Comparison", fontsize=10)
@@ -556,43 +477,54 @@ def server(input, output, session):
     @output
     @render.ui
     def choropleth_map():
-        color_scheme = input.map_color_scheme()
+        """Render choropleth map showing crime rates by state."""
+      
+        crime_type = input.crime_type()
         year = input.map_year()
-        col = selected_column()
-        if color_scheme == "None" or col is None:
-            return ui.div(
-                ui.h4("Map Configuration Incomplete"),
-                ui.p("Please select both a Crime Metric and a Color Scheme to view the map."),
-                style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 8px;"
-            )
-        if input.crime_type() == "None":
-            return ui.div(
-                style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;",
-                children="Map hidden. Select a metric to visualize."
-            ), ui.h3("No Metric Selected", class_="kpi-val")
-            return ui.div(style="height: 400px; display: flex; align-items: center; justify-content: center; color: #aaa;", 
-                      children="Map hidden. Select a metric to visualize."), ui.h3("Select a City", class_="kpi-val")
 
+        # 1. Handle the "Rest/None" state
+        if crime_type == "None":
+            return ui.div(
+                ui.h4("Map Reset"),
+                ui.p("Select a Crime Metric to visualize the map."),
+                style="text-align: center; padding: 100px; color: #999; border: 1px dashed #ccc; border-radius: 10px;"
+            )
         
-        # Use full dataset for map (not filtered by cities)
+        # 2. Local mapping (Do NOT call selected_column here)
+        mapping = {
+            "Violent Crime": "violent_per_100k",
+            "Homicide": "homs_per_100k",
+            "Rape": "rape_per_100k",
+            "Robbery": "rob_per_100k",
+            "Aggravated Assault": "agg_ass_per_100k",
+        }
+        col = mapping.get(crime_type)
+        
+        # 3. Use 'year' here, NOT crime_type
         state_data = prepare_state_data(crimes_df, year, col)
+        
         if state_data.empty:
             return ui.div(
                 "No data available for selected year",
-                class_="placeholder-box",
-                style="text-align: center; padding: 50px;"
+                style="text-align: center; padding: 50px; color: #999;"
             )
+        
+        # 4. Load US states geography
         states = alt.topo_feature(vega_data.us_10m.url, 'states')
+        
+        # 5. Background layer
         background = alt.Chart(states).mark_geoshape(
             fill='lightgray', stroke='white', strokeWidth=1
-        ).project('albersUsa').properties(width='container', height=400)
+        ).project('albersUsa')
+        
+        # 6. Choropleth layer
         choropleth = alt.Chart(states).mark_geoshape(
             stroke='white', strokeWidth=1
         ).encode(
             color=alt.Color(
                 'crime_rate:Q',
                 scale=alt.Scale(
-                    scheme=input.map_color_scheme(),
+                    scheme='reds',
                     domain=[0, state_data['crime_rate'].max()]
                 ),
                 legend=alt.Legend(
@@ -608,21 +540,23 @@ def server(input, output, session):
         ).transform_lookup(
             lookup='id',
             from_=alt.LookupData(state_data, 'id', ['crime_rate', 'state_name', 'num_cities'])
-        ).project('albersUsa').properties(
-            width='container', height=400,
-            title={"text": f"{input.crime_type()} Rate by State — {year}", "fontSize": 14}
+        ).project('albersUsa')
+        
+        # 7. Use alt.layer for Posit Connect Cloud stability
+        final_map = alt.layer(background, choropleth).properties(
             width='container',
             height=400,
-            title="Geographic Distribution by State"
+            title=f"{crime_type} Rate by State — {year}"
+        ).configure_view(
+            strokeWidth=0
         )
-        final_map = background + choropleth
+    
         return ui.HTML(final_map.to_html())
 
 
 
     # AI EXPLORER TAB SERVER LOGIC
    
-
     # Initialize querychat — returns object with reactive .df() method
     qc_vals = qc.server()
 
