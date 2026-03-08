@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.3.0] - 2026-03-08
+
+### Added
+
+- Implemented a querychat AI chat interface ([#54](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/54))
+- Created a dataframe output component to see/download the filtered dataframe ([#54](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/54))
+- Appropriated main tab visualizations for use with the querychat filtered dataframe ([#54](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/54))
+- Added a prompt to remind users to select a city - "no metric selected" ([#53](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/53))
+
+### Changed
+
+- Aligned chart titles with card headers for consistency across all visualizations ([#53](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/53))
+- Converted City Comparison bar chart from vertical to horizontal orientation to prevent x-axis labels from being cut off ([#53](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/53))
+
+### Fixed
+
+- Synchronized color schemes between Trend Over Time line chart and City Comparison bar chart so the same city uses the same color in both visualizations ([#53](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/53))
+- Fixed the reactivity of the map with filter inputs ([#53](https://github.com/UBC-MDS/DSCI-532_2026_38_crime-dashboard/issues/53))
+
+### Known Issues
+
+N/A
+
 ## [0.2.0] - 2026-02-28
 
 ### Added

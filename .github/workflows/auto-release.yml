@@ -1,12 +1,15 @@
 name: Auto Release
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
 
 jobs:
   release:
+    # Only run if PR was merged AND came from dev branch
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'dev'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
