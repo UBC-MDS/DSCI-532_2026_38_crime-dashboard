@@ -141,3 +141,18 @@ body{
 }
 
 .btn{ border-radius: 14px !important; font-weight: 800 !important; }
+
+/* Prevent Altair chart cross-contamination */
+.altair-map,
+.altair-chart {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Ensure each Altair embed is isolated */
+.altair-map > div,
+.altair-chart > div {
+    width: 100% !important;
+    height: auto !important;
+}
