@@ -545,8 +545,10 @@ def server(input, output, session):
             strokeWidth=0
         )
     
-        return ui.HTML(final_map.to_html())
-
+        return ui.div(
+                        {"id": "map-container", "class": "altair-map"},
+                        ui.HTML(final_map.to_html())
+                        )
 
 
     # AI EXPLORER TAB SERVER LOGIC
@@ -595,7 +597,10 @@ def server(input, output, session):
                 tooltip=["year:O", "violent_per_100k:Q"]
             ).properties(width="container", height=350)
 
-        return ui.HTML(chart.to_html())
+        return ui.div(
+                    {"id": "ai-trend-container", "class": "altair-chart"},
+                    ui.HTML(chart.to_html())
+                    )
 
     # Plot 2: Crime rate by city (bar chart)
     @render.ui
@@ -620,7 +625,10 @@ def server(input, output, session):
             color=alt.value("#2c3e50")
         ).properties(width="container", height=350)
 
-        return ui.HTML(chart.to_html())
+        return ui.div(
+                        {"id": "ai-bar-container", "class": "altair-chart"},
+                        ui.HTML(chart.to_html())
+                    )
 
     # Data table
     @render.data_frame
