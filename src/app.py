@@ -555,12 +555,14 @@ def server(input, output, session):
     qc_vals = qc.server()
 
     # KPI: Row count
+    @output
     @render.ui
     def ai_row_count():
         n = len(qc_vals.df())
         return ui.h3(f"{n:,}", class_="kpi-val")
 
     # KPI: Unique city count
+    @output
     @render.ui
     def ai_city_count():
         df = qc_vals.df()
