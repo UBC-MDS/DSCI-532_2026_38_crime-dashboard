@@ -206,8 +206,6 @@ app_ui = ui.page_fillable(
 # Server
 
 def server(input, output, session):
-
-    # ORIGINAL DASHBOARD SERVER LOGIC (unchanged)
     
     @reactive.calc
     def selected_column():
@@ -573,6 +571,7 @@ def server(input, output, session):
         return ui.h3(str(n), class_="kpi-val")
 
     # Plot 1: Violent crime trend over time (line chart)
+    @output
     @render.ui
     def ai_trend_chart():
         df = qc_vals.df()
@@ -603,6 +602,7 @@ def server(input, output, session):
                     )
 
     # Plot 2: Crime rate by city (bar chart)
+    @output
     @render.ui
     def ai_city_bar_chart():
         df = qc_vals.df()
