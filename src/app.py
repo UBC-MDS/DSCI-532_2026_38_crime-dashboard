@@ -48,17 +48,11 @@ qc = QueryChat(
 app_ui = ui.page_fillable(
     
     ui.tags.head(
+         # Bootswatch "Flatly" theme (professional look)
         ui.tags.link(
             rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/cyborg/bootstrap.min.css",
+            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
         ),
-        ui.tags.link(rel="preconnect", href="https://fonts.googleapis.com"),
-        ui.tags.link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin="anonymous"),
-        ui.tags.link(
-            href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600&display=swap", 
-            rel="stylesheet"
-        ),
-
         ui.include_css("www/styles.css"),
 
         # --- LINES TO PRELOAD THE MAP SCRIPTS ---
