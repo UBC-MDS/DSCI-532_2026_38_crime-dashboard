@@ -4,11 +4,9 @@ channels:
 dependencies:
   - python=3.11
   - pip
-
   # notebook/dev
   - jupyterlab
   - ipykernel
-
   # data + viz
   - pandas
   - numpy
@@ -17,7 +15,8 @@ dependencies:
   - faicons
   - vega_datasets
   - pyarrow
-
+  # database
+  - duckdb
   # app
   - pip:
       - shiny>=1.5
@@ -31,4 +30,3 @@ dependencies:
       - chatlas
       - anthropic
       - python-dotenv
-      
