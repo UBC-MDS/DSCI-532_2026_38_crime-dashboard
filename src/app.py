@@ -56,7 +56,7 @@ app_ui = ui.page_fillable(
         ui.include_css("www/styles.css"),
 
         # --- LINES TO PRELOAD THE MAP SCRIPTS ---
-        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@6"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@6"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-embed@6"),
         # ----------------------------------------------------
