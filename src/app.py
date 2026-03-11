@@ -82,8 +82,10 @@ app_ui = ui.page_fillable(
             href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
         ),
         ui.include_css("www/styles.css"),
-        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
-        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@5"),
+
+        # --- LINES TO PRELOAD THE MAP SCRIPTS ---
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@6"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@6"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-embed@6"),
     ),
 
@@ -192,9 +194,11 @@ app_ui = ui.page_fillable(
         # Tab 2: AI Explorer
         # ------------------------------------------------------------------
         ui.nav_panel(
-            "AI Explorer",
-            ui.page_sidebar(
+        "AI Explorer",
+            ui.layout_sidebar(
                 ui.sidebar(qc.ui()),
+
+                # KPI row
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
@@ -208,21 +212,33 @@ app_ui = ui.page_fillable(
                     ),
                     col_widths=(6, 6),
                 ),
+
+                # Charts row (added margin-top)
                 ui.layout_columns(
+                    {"style": "margin-top:20px;"},
                     ui.card(
+                        {"class": "plot-card"},
                         ui.card_header("Violent Crime Trend Over Time"),
                         ui.output_ui("ai_trend_chart"),
                     ),
                     ui.card(
+                        {"class": "plot-card"},
                         ui.card_header("Crime Rate by City"),
                         ui.output_ui("ai_city_bar_chart"),
                     ),
                     col_widths=(6, 6),
                 ),
+
+                # Data table (added margin-top)
                 ui.card(
+                    {"class": "plot-card", "style": "margin-top:20px;"},
                     ui.card_header("Filtered Crime Data"),
                     ui.output_data_frame("ai_data_table"),
-                    ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
+                    ui.download_button(
+                        "ai_download",
+                        "Download Filtered Data",
+                        class_="btn btn-dark mt-2"
+                    ),
                 ),
             ),
         ),
