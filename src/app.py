@@ -218,16 +218,17 @@ app_ui = ui.page_fillable(
                     {"style": "margin-top:20px;"},
                     ui.card(
                         {"class": "plot-card"},
-                        ui.card_header("Violent Crime Trend Over Time"),
-                        ui.output_ui("ai_trend_chart"),
-                    ),
-                    ui.card(
-                        {"class": "plot-card"},
                         ui.card_header("Crime Rate by City"),
                         ui.output_ui("ai_city_bar_chart"),
                     ),
+                    ui.card(
+                        {"class": "plot-card"},
+                        ui.card_header("Violent Crime Trend Over Time"),
+                        ui.output_ui("ai_trend_chart"),
+                    ),
                     col_widths=(6, 6),
                 ),
+
 
                 # Data table (added margin-top)
                 ui.card(
@@ -652,7 +653,10 @@ def server(input, output, session):
             return ui.p("No data to display. Try asking a question in the chat!",
                         style="text-align:center;padding:40px;color:#999;")
 
-        if "department_name" in df.columns and df["department_name"].nunique() <= 10:
+        n_cities = df["department_name"].nunique() if "department_name" in df.columns else 0
+
+        if n_cities <= 10:
+            # Few cities — colour each line individually
             chart = alt.Chart(df).mark_line(point=True).encode(
                 x=alt.X("year:O", title="Year"),
                 y=alt.Y("violent_per_100k:Q", title="Violent Crime per 100k"),
@@ -660,18 +664,37 @@ def server(input, output, session):
                 tooltip=["department_name:N", "year:O", "violent_per_100k:Q"],
             ).properties(width="container", height=350)
         else:
-            yearly = df.groupby("year", as_index=False)["violent_per_100k"].mean()
-            chart = alt.Chart(yearly).mark_line(point=True).encode(
+            # Many cities — mean line + shaded min/max band for context
+            yearly = (
+                df.groupby("year", as_index=False)["violent_per_100k"]
+                .agg(mean="mean", min="min", max="max")
+            )
+            band = alt.Chart(yearly).mark_area(opacity=0.2, color="#e74c3c").encode(
                 x=alt.X("year:O", title="Year"),
-                y=alt.Y("violent_per_100k:Q", title="Avg Violent Crime per 100k"),
-                tooltip=["year:O", "violent_per_100k:Q"],
-            ).properties(width="container", height=350)
+                y=alt.Y("min:Q", title="Violent Crime per 100k"),
+                y2=alt.Y2("max:Q"),
+            )
+            line = alt.Chart(yearly).mark_line(point=True, color="#e74c3c").encode(
+                x=alt.X("year:O"),
+                y=alt.Y("mean:Q"),
+                tooltip=[
+                    alt.Tooltip("year:O", title="Year"),
+                    alt.Tooltip("mean:Q", title="Avg Rate", format=".1f"),
+                    alt.Tooltip("min:Q",  title="Min Rate",  format=".1f"),
+                    alt.Tooltip("max:Q",  title="Max Rate",  format=".1f"),
+                ],
+            )
+            chart = alt.layer(band, line).properties(
+                width="container",
+                height=350,
+                title=f"Average across {n_cities} cities (shaded = min/max range)",
+            )
 
         return ui.div(
-                    {"id": "ai-trend-container", "class": "altair-chart"},
-                    ui.HTML(chart.to_html())
-                    )
-
+            {"id": "ai-trend-container", "class": "altair-chart"},
+            ui.HTML(chart.to_html())
+        )
+    
     # Plot 2: Crime rate by city (bar chart)
     @output
     @render.ui
