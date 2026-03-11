@@ -76,15 +76,10 @@ qc = QueryChat(
 app_ui = ui.page_fillable(
 
     ui.tags.head(
+         # Bootswatch "Flatly" theme (professional look)
         ui.tags.link(
             rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/cyborg/bootstrap.min.css",
-        ),
-        ui.tags.link(rel="preconnect", href="https://fonts.googleapis.com"),
-        ui.tags.link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin="anonymous"),
-        ui.tags.link(
-            href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600&display=swap",
-            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
         ),
         ui.include_css("www/styles.css"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
@@ -387,11 +382,7 @@ def prepare_state_data_from_db(
 # ---------------------------------------------------------------------------
 
 def server(input, output, session):
-
-    # ------------------------------------------------------------------
-    # Shared reactive calcs
-    # ------------------------------------------------------------------
-
+    
     @reactive.calc
     def selected_column() -> str | None:
         crime = input.crime_type()
@@ -606,10 +597,15 @@ def server(input, output, session):
         final_map = alt.layer(background, choropleth).properties(
             width="container",
             height=400,
-            title=f"{crime_type} Rate by State — {year}",
-        ).configure_view(strokeWidth=0)
-
-        return ui.HTML(final_map.to_html())
+            title=f"{crime_type} Rate by State — {year}"
+        ).configure_view(
+            strokeWidth=0
+        )
+    
+        return ui.div(
+                        {"id": "map-container", "class": "altair-map"},
+                        ui.HTML(final_map.to_html())
+                        )
 
     # ------------------------------------------------------------------
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
@@ -617,16 +613,22 @@ def server(input, output, session):
 
     qc_vals = qc.server()
 
+    # KPI: Row count
+    @output
     @render.ui
     def ai_row_count():
         return ui.h3(f"{len(qc_vals.df()):,}", class_="kpi-val")
 
+    # KPI: Unique city count
+    @output
     @render.ui
     def ai_city_count():
         df = qc_vals.df()
         n  = df["department_name"].nunique() if "department_name" in df.columns else 0
         return ui.h3(str(n), class_="kpi-val")
 
+    # Plot 1: Violent crime trend over time (line chart)
+    @output
     @render.ui
     def ai_trend_chart():
         df = qc_vals.df()
@@ -649,8 +651,13 @@ def server(input, output, session):
                 tooltip=["year:O", "violent_per_100k:Q"],
             ).properties(width="container", height=350)
 
-        return ui.HTML(chart.to_html())
+        return ui.div(
+                    {"id": "ai-trend-container", "class": "altair-chart"},
+                    ui.HTML(chart.to_html())
+                    )
 
+    # Plot 2: Crime rate by city (bar chart)
+    @output
     @render.ui
     def ai_city_bar_chart():
         df = qc_vals.df()
@@ -673,7 +680,10 @@ def server(input, output, session):
             color=alt.value("#2c3e50"),
         ).properties(width="container", height=350)
 
-        return ui.HTML(chart.to_html())
+        return ui.div(
+                        {"id": "ai-bar-container", "class": "altair-chart"},
+                        ui.HTML(chart.to_html())
+                    )
 
     @render.data_frame
     def ai_data_table():
