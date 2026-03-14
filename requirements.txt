@@ -1,6 +1,4 @@
 
-Copy
-
 # ── Web framework
 shiny==1.5.1
 uvicorn==0.40.0
