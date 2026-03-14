@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.4.1] - 2026-03-13
+
+### Added
+
+- Added contextual helper notes under KPI metric cards to clarify interpretation and units (e.g., incidents per 100k residents)
+
+### Changed
+
+- Removed duplicate in-plot titles from dashboard visualizations so each chart uses the card header as the single source of title text
+
+### Fixed
+
+- Fixed year label formatting in the Year Range slider by disabling numeric separators/decimals for cleaner integer year display
+
+### Known Issues
+
+N/A
+
 ## [0.4.0] - 2026-03-11
 
 ### Added
