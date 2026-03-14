@@ -1,5 +1,4 @@
 from shiny import App, ui, reactive, render
-import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 import altair as alt
@@ -8,7 +7,9 @@ from shiny import req
 from faicons import icon_svg
 from querychat import QueryChat
 from dotenv import load_dotenv
-import duckdb
+from db import con, YEAR_MIN, YEAR_MAX, CITY_CHOICES, qc_df
+from geo_lookup import CRIME_METRIC_MAP, prepare_state_data
+
 
 load_dotenv()
 
@@ -24,34 +25,6 @@ plt.rcParams.update(
 )
 
 
-# ---------------------------------------------------------------------------
-# Database setup
-# ---------------------------------------------------------------------------
-
-BASE_DIR    = Path(__file__).resolve().parent.parent
-PARQUET_PATH = BASE_DIR / "data" / "processed" / "crime.parquet"
-
-# Single persistent read-only connection shared across all reactive contexts.
-# DuckDB can query parquet directly without loading the full file into memory.
-con = duckdb.connect(database=":memory:", read_only=False)
-con.execute(f"CREATE VIEW crimes AS SELECT * FROM read_parquet('{PARQUET_PATH}')")
-
-# ---------------------------------------------------------------------------
-# Startup metadata queries — cheap, column-statistics only, no full scan
-# ---------------------------------------------------------------------------
-
-_meta = con.execute(
-    "SELECT MIN(year) AS yr_min, MAX(year) AS yr_max FROM crimes"
-).fetchone()
-YEAR_MIN: int = int(_meta[0])
-YEAR_MAX: int = int(_meta[1])
-
-CITY_CHOICES: list[str] = sorted(
-    row[0]
-    for row in con.execute(
-        "SELECT DISTINCT department_name FROM crimes ORDER BY department_name"
-    ).fetchall()
-)
 
 # ---------------------------------------------------------------------------
 # QueryChat — needs a real DataFrame at init time.
@@ -59,10 +32,8 @@ CITY_CHOICES: list[str] = sorted(
 # isolated to the AI tab; it does NOT affect the main dashboard's lazy path.
 # ---------------------------------------------------------------------------
 
-_qc_df = pd.read_parquet(PARQUET_PATH)
-
 qc = QueryChat(
-    _qc_df,
+    qc_df,
     "crime_data",
     data_description=(BASE_DIR / "data" / "data_description.md"),
     client="anthropic/claude-sonnet-4-20250514",
@@ -576,7 +547,7 @@ def server(input, output, session):
         col = CRIME_METRIC_MAP.get(crime_type)
 
         # Filtering happens inside DuckDB; only ~35 aggregated state rows enter Python
-        state_data = prepare_state_data_from_db(con, year, col)
+        state_data = prepare_state_data(con, year, col)
 
         if state_data.empty:
             return ui.div(
