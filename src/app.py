@@ -7,7 +7,7 @@ import altair as alt
 from vega_datasets import data as vega_data
 from shiny import req
 from faicons import icon_svg
-import querychat
+from querychat import QueryChat
 from dotenv import load_dotenv
 from db import con, YEAR_MIN, YEAR_MAX, CITY_CHOICES, qc_df
 from geo_lookup import CRIME_METRIC_MAP, prepare_state_data
@@ -15,8 +15,11 @@ from geo_lookup import CRIME_METRIC_MAP, prepare_state_data
 
 load_dotenv()
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 plt.rcParams.update(
     {
+    
         "figure.dpi": 120,
         "axes.grid": True,
         "grid.alpha": 0.25,
@@ -180,7 +183,7 @@ app_ui = ui.page_fillable(
         ui.nav_panel(
             "AI Explorer",
             ui.page_sidebar(
-                ui.sidebar(querychat.ui("querychat")),
+                ui.sidebar(qc.ui()),
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
@@ -606,7 +609,7 @@ def server(input, output, session):
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
     # ------------------------------------------------------------------
 
-    qc_vals = querychat.server("querychat", qc_config)
+    qc_vals = qc.server()
 
     @render.ui
     def ai_row_count():
