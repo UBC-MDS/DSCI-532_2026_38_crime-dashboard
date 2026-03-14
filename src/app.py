@@ -78,9 +78,10 @@ qc_config = querychat.init(
 app_ui = ui.page_fillable(
 
     ui.tags.head(
+         # Bootswatch "Flatly" theme (professional look)
         ui.tags.link(
             rel="stylesheet",
-            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/cyborg/bootstrap.min.css",
+            href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
         ),
         ui.tags.link(rel="preconnect", href="https://fonts.googleapis.com"),
         ui.tags.link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin="anonymous"),
@@ -223,21 +224,34 @@ app_ui = ui.page_fillable(
                     ),
                     col_widths=(6, 6),
                 ),
+
+                # Charts row (added margin-top)
                 ui.layout_columns(
+                    {"style": "margin-top:20px;"},
                     ui.card(
-                        ui.card_header("Violent Crime Trend Over Time"),
-                        ui.output_ui("ai_trend_chart"),
-                    ),
-                    ui.card(
+                        {"class": "plot-card"},
                         ui.card_header("Crime Rate by City"),
                         ui.output_ui("ai_city_bar_chart"),
                     ),
+                    ui.card(
+                        {"class": "plot-card"},
+                        ui.card_header("Violent Crime Trend Over Time"),
+                        ui.output_ui("ai_trend_chart"),
+                    ),
                     col_widths=(6, 6),
                 ),
+
+
+                # Data table (added margin-top)
                 ui.card(
+                    {"class": "plot-card", "style": "margin-top:20px;"},
                     ui.card_header("Filtered Crime Data"),
                     ui.output_data_frame("ai_data_table"),
-                    ui.download_button("ai_download", "Download Filtered Data", class_="btn btn-dark mt-2"),
+                    ui.download_button(
+                        "ai_download",
+                        "Download Filtered Data",
+                        class_="btn btn-dark mt-2"
+                    ),
                 ),
             ),
         ),
@@ -680,7 +694,10 @@ def server(input, output, session):
             color=alt.value("#2c3e50"),
         ).properties(width="container", height=350)
 
-        return ui.HTML(chart.to_html())
+        return ui.div(
+                        {"id": "ai-bar-container", "class": "altair-chart"},
+                        ui.HTML(chart.to_html())
+                    )
 
     @render.data_frame
     def ai_data_table():
