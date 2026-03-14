@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from shiny import App, ui, reactive, render
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,7 +8,7 @@ import altair as alt
 from vega_datasets import data as vega_data
 from shiny import req
 from faicons import icon_svg
-from querychat import QueryChat
+import querychat
 from dotenv import load_dotenv
 import duckdb
 
@@ -61,7 +63,7 @@ CITY_CHOICES: list[str] = sorted(
 
 _qc_df = pd.read_parquet(PARQUET_PATH)
 
-qc = QueryChat(
+qc_config = querychat.init(
     _qc_df,
     "crime_data",
     data_description=(BASE_DIR / "data" / "data_description.md"),
@@ -81,11 +83,15 @@ app_ui = ui.page_fillable(
             rel="stylesheet",
             href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css",
         ),
+        ui.tags.link(rel="preconnect", href="https://fonts.googleapis.com"),
+        ui.tags.link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin="anonymous"),
+        ui.tags.link(
+            href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto+Mono:wght@400;600&display=swap",
+            rel="stylesheet"
+        ),
         ui.include_css("www/styles.css"),
-
-        # --- LINES TO PRELOAD THE MAP SCRIPTS ---
-        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@6"),
-        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@6"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
+        ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-lite@5"),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega-embed@6"),
     ),
 
@@ -122,6 +128,7 @@ app_ui = ui.page_fillable(
                         max=YEAR_MAX,
                         value=(YEAR_MIN, YEAR_MAX),
                         step=1,
+                        sep="",
                     ),
                     ui.hr(),
                     ui.h6("Map Controls", class_="sidebar-title"),
@@ -152,12 +159,19 @@ app_ui = ui.page_fillable(
                         {"class": "kpi-card"},
                         ui.card_header("Peak Crime Year"),
                         ui.output_ui("peak_year"),
+                        ui.div(
+                            "Year with highest selected crime rate in the filtered view.",
+                            class_="kpi-sub",
+                        ),
                     ),
                     ui.card(
                         {"class": "kpi-card"},
                         ui.card_header("Average Rate"),
                         ui.output_ui("crime_rate"),
-                        ui.div("per 100k residents", class_="kpi-sub"),
+                        ui.div(
+                            "Units: incidents per 100k residents.",
+                            class_="kpi-sub",
+                        ),
                     ),
                     col_widths=(7, 5),
                 ),
@@ -194,11 +208,9 @@ app_ui = ui.page_fillable(
         # Tab 2: AI Explorer
         # ------------------------------------------------------------------
         ui.nav_panel(
-        "AI Explorer",
-            ui.layout_sidebar(
-                ui.sidebar(qc.ui()),
-
-                # KPI row
+            "AI Explorer",
+            ui.page_sidebar(
+                ui.sidebar(querychat.ui("querychat")),
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
@@ -399,7 +411,11 @@ def prepare_state_data_from_db(
 # ---------------------------------------------------------------------------
 
 def server(input, output, session):
-    
+
+    # ------------------------------------------------------------------
+    # Shared reactive calcs
+    # ------------------------------------------------------------------
+
     @reactive.calc
     def selected_column() -> str | None:
         crime = input.crime_type()
@@ -506,7 +522,6 @@ def server(input, output, session):
 
         ax.set_xlabel("Year")
         ax.set_ylabel("Rate per 100k")
-        ax.set_title(f"{input.crime_type()} Trend Over Time")
 
         if len(input.city()) <= 6:
             ax.legend()
@@ -550,7 +565,6 @@ def server(input, output, session):
 
         ax.barh(summary["department_name"], summary[col], color=bar_colors)
         ax.set_xlabel("Average rate per 100k", fontsize=9)
-        ax.set_title("City Comparison", fontsize=10)
         ax.tick_params(axis="y", labelsize=8)
         ax.tick_params(axis="x", labelsize=8)
 
@@ -614,38 +628,26 @@ def server(input, output, session):
         final_map = alt.layer(background, choropleth).properties(
             width="container",
             height=400,
-            title=f"{crime_type} Rate by State — {year}"
-        ).configure_view(
-            strokeWidth=0
-        )
-    
-        return ui.div(
-                        {"id": "map-container", "class": "altair-map"},
-                        ui.HTML(final_map.to_html())
-                        )
+        ).configure_view(strokeWidth=0)
+
+        return ui.HTML(final_map.to_html())
 
     # ------------------------------------------------------------------
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
     # ------------------------------------------------------------------
 
-    qc_vals = qc.server()
+    qc_vals = querychat.server("querychat", qc_config)
 
-    # KPI: Row count
-    @output
     @render.ui
     def ai_row_count():
         return ui.h3(f"{len(qc_vals.df()):,}", class_="kpi-val")
 
-    # KPI: Unique city count
-    @output
     @render.ui
     def ai_city_count():
         df = qc_vals.df()
         n  = df["department_name"].nunique() if "department_name" in df.columns else 0
         return ui.h3(str(n), class_="kpi-val")
 
-    # Plot 1: Violent crime trend over time (line chart)
-    @output
     @render.ui
     def ai_trend_chart():
         df = qc_vals.df()
@@ -653,10 +655,7 @@ def server(input, output, session):
             return ui.p("No data to display. Try asking a question in the chat!",
                         style="text-align:center;padding:40px;color:#999;")
 
-        n_cities = df["department_name"].nunique() if "department_name" in df.columns else 0
-
-        if n_cities <= 10:
-            # Few cities — colour each line individually
+        if "department_name" in df.columns and df["department_name"].nunique() <= 10:
             chart = alt.Chart(df).mark_line(point=True).encode(
                 x=alt.X("year:O", title="Year"),
                 y=alt.Y("violent_per_100k:Q", title="Violent Crime per 100k"),
@@ -664,39 +663,15 @@ def server(input, output, session):
                 tooltip=["department_name:N", "year:O", "violent_per_100k:Q"],
             ).properties(width="container", height=350)
         else:
-            # Many cities — mean line + shaded min/max band for context
-            yearly = (
-                df.groupby("year", as_index=False)["violent_per_100k"]
-                .agg(mean="mean", min="min", max="max")
-            )
-            band = alt.Chart(yearly).mark_area(opacity=0.2, color="#e74c3c").encode(
+            yearly = df.groupby("year", as_index=False)["violent_per_100k"].mean()
+            chart = alt.Chart(yearly).mark_line(point=True).encode(
                 x=alt.X("year:O", title="Year"),
-                y=alt.Y("min:Q", title="Violent Crime per 100k"),
-                y2=alt.Y2("max:Q"),
-            )
-            line = alt.Chart(yearly).mark_line(point=True, color="#e74c3c").encode(
-                x=alt.X("year:O"),
-                y=alt.Y("mean:Q"),
-                tooltip=[
-                    alt.Tooltip("year:O", title="Year"),
-                    alt.Tooltip("mean:Q", title="Avg Rate", format=".1f"),
-                    alt.Tooltip("min:Q",  title="Min Rate",  format=".1f"),
-                    alt.Tooltip("max:Q",  title="Max Rate",  format=".1f"),
-                ],
-            )
-            chart = alt.layer(band, line).properties(
-                width="container",
-                height=350,
-                title=f"Average across {n_cities} cities (shaded = min/max range)",
-            )
+                y=alt.Y("violent_per_100k:Q", title="Avg Violent Crime per 100k"),
+                tooltip=["year:O", "violent_per_100k:Q"],
+            ).properties(width="container", height=350)
 
-        return ui.div(
-            {"id": "ai-trend-container", "class": "altair-chart"},
-            ui.HTML(chart.to_html())
-        )
-    
-    # Plot 2: Crime rate by city (bar chart)
-    @output
+        return ui.HTML(chart.to_html())
+
     @render.ui
     def ai_city_bar_chart():
         df = qc_vals.df()
