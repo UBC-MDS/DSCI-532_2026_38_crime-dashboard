@@ -1,72 +1,26 @@
-# Core Shiny and Web Framework
+
+# ── Web framework
 shiny==1.5.1
 uvicorn==0.40.0
-starlette==0.52.1
-asgiref==3.11.1
-python-multipart==0.0.22
-htmltools==0.6.0
-websockets==16.0
-watchfiles==1.1.1
-
-# Data Processing
+shinywidgets==0.7.1
+faicons==0.2.2
+ 
+# ── Data processing
 pandas==3.0.1
 numpy==2.4.2
 pyarrow==23.0.1
-
-# Visualization
+duckdb
+ 
+# ── Visualisation
 altair==6.0.0
 matplotlib==3.10.8
-shinywidgets==0.7.1
+plotly==6.5.2
 vegafusion==2.0.3
 vl-convert-python==1.9.0.post1
-plotly==6.5.2
-faicons==0.2.2
-
-# Choropleth Map Dependencies
 vega-datasets==0.9.0
-
-# Utilities
-click==8.3.1
-python-dateutil==2.9.0.post0
-pytz==2025.2
-narwhals==2.16.0
-orjson==3.11.7
-
-# HTTP and Networking
-httpx==0.28.1
-httpcore==1.0.9
-requests==2.32.5
-certifi==2026.2.25
-urllib3==2.6.3
-idna==3.11
-charset-normalizer==3.4.4
-h11==0.16.0
-h2==4.3.0
-hpack==4.1.0
-hyperframe==6.1.0
-sniffio==1.3.1
-anyio==4.12.1
-
-# Markdown and Text Processing
-markdown-it-py==4.0.0
-mdit-py-plugins==0.5.0
-mdurl==0.1.2
-linkify-it-py==2.0.3
-uc-micro-py==1.0.3
-
-# Core Python Utilities
-packaging==26.0
-typing-extensions==4.15.0
-
-# Matplotlib dependencies (for your existing plots)
-contourpy==1.3.3
-cycler==0.12.1
-fonttools==4.61.1
-kiwisolver==1.4.9
-pillow==12.1.1
-pyparsing==3.3.2
-
+ 
+# ── AI / chat 
 querychat
 chatlas
-python-dotenv
 anthropic
+python-dotenv

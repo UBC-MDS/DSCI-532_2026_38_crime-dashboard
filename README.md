@@ -62,6 +62,39 @@ conda activate crime-dashboard
 python -m shiny run --reload src/app.py
 ```
 
+## Running Tests
+
+### Unit Tests
+Make sure your environment is activated, then from the project root:
+```bash
+pytest tests/test_utils.py -v
+```
+
+### UI Tests (Playwright)
+The app must be running locally before executing UI tests.
+
+**Terminal 1 — start the app:**
+```bash
+python -m shiny run --reload src/app.py
+```
+
+**Terminal 2 — run the tests:**
+```bash
+playwright install chromium
+pytest tests/test_ui.py -v
+```
+
+### What the tests cover
+
+| Test | File | What it verifies |
+|---|---|---|
+| `test_get_crime_column_valid` | `test_utils.py` | Valid crime types map to the correct DataFrame column |
+| `test_get_crime_column_none_string` | `test_utils.py` | `"None"` selection returns `None` so KPI placeholders show correctly |
+| `test_get_crime_column_unknown` | `test_utils.py` | Unrecognized inputs return `None` without crashing |
+| `test_app_loads_with_tabs` | `test_ui.py` | App starts and both tabs are visible |
+| `test_crime_type_selection_updates_kpis` | `test_ui.py` | Selecting a crime metric updates the KPI cards |
+| `test_reset_button_clears_crime_type` | `test_ui.py` | Reset button restores crime type to `"None"` |
+
 ### Notes:
 If you would like to use this environment with Jupyter notebooks, register the kernel with:
 ```{bash}
