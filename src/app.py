@@ -8,7 +8,7 @@ import altair as alt
 from vega_datasets import data as vega_data
 from shiny import req
 from faicons import icon_svg
-import querychat
+from querychat import QueryChat
 from dotenv import load_dotenv
 import duckdb
 
@@ -63,7 +63,7 @@ CITY_CHOICES: list[str] = sorted(
 
 _qc_df = pd.read_parquet(PARQUET_PATH)
 
-qc_config = querychat.init(
+qc_config = QueryChat(
     _qc_df,
     "crime_data",
     data_description=(BASE_DIR / "data" / "data_description.md"),
@@ -210,7 +210,7 @@ app_ui = ui.page_fillable(
         ui.nav_panel(
             "AI Explorer",
             ui.page_sidebar(
-                ui.sidebar(querychat.ui("querychat")),
+                qc_config.sidebar(),
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
@@ -240,7 +240,12 @@ app_ui = ui.page_fillable(
                     ),
                     col_widths=(6, 6),
                 ),
-
+                
+                ui.card(
+                    {"class": "kpi-card", "style": "margin-top:20px;"},
+                    ui.card_header("Selected City from Table Click"),
+                    ui.output_ui("ai_selected_city_text"),
+                ),
 
                 # Data table (added margin-top)
                 ui.card(
@@ -636,24 +641,71 @@ def server(input, output, session):
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
     # ------------------------------------------------------------------
 
-    qc_vals = querychat.server("querychat", qc_config)
+    qc_vals = qc_config.server()
 
+    @reactive.calc
+    def ai_selected_city():
+        df = qc_vals.df()
+        if df.empty or "department_name" not in df.columns:
+            return None
+
+        sel = ai_data_table.cell_selection()
+        if sel is None:
+            return None
+
+        rows = sel.get("rows", [])
+        if not rows:
+            return None
+
+        row_idx = rows[0]
+        if row_idx >= len(df):
+            return None
+
+        return df.iloc[row_idx]["department_name"]
+    
+    @reactive.calc
+    def ai_clicked_df():
+        df = qc_vals.df()
+        city = ai_selected_city()
+
+        if df.empty or city is None or "department_name" not in df.columns:
+            return df
+
+        return df[df["department_name"] == city].copy()
+    
+    @output
+    @render.ui
+    def ai_selected_city_text():
+        city = ai_selected_city()
+        if city is None:
+            return ui.p(
+                "Click a row in the filtered crime table to focus the AI charts on that city.",
+                class_="muted"
+            )
+        return ui.h4(city, class_="kpi-val")
+
+    @output
     @render.ui
     def ai_row_count():
-        return ui.h3(f"{len(qc_vals.df()):,}", class_="kpi-val")
+        return ui.h3(f"{len(ai_clicked_df()):,}", class_="kpi-val")
 
+    @output
     @render.ui
     def ai_city_count():
-        df = qc_vals.df()
-        n  = df["department_name"].nunique() if "department_name" in df.columns else 0
+        df = ai_clicked_df()
+        n = df["department_name"].nunique() if "department_name" in df.columns else 0
         return ui.h3(str(n), class_="kpi-val")
 
+    @output
     @render.ui
     def ai_trend_chart():
-        df = qc_vals.df()
+        df = ai_clicked_df()
+
         if df.empty or "year" not in df.columns or "violent_per_100k" not in df.columns:
-            return ui.p("No data to display. Try asking a question in the chat!",
-                        style="text-align:center;padding:40px;color:#999;")
+            return ui.p(
+                "No data to display. Try asking a question in the chat!",
+                style="text-align:center;padding:40px;color:#999;"
+            )
 
         if "department_name" in df.columns and df["department_name"].nunique() <= 10:
             chart = alt.Chart(df).mark_line(point=True).encode(
@@ -672,12 +724,16 @@ def server(input, output, session):
 
         return ui.HTML(chart.to_html())
 
+    @output
     @render.ui
     def ai_city_bar_chart():
-        df = qc_vals.df()
+        df = ai_clicked_df()
+
         if df.empty or "department_name" not in df.columns or "violent_per_100k" not in df.columns:
-            return ui.p("No data to display. Try asking a question in the chat!",
-                        style="text-align:center;padding:40px;color:#999;")
+            return ui.p(
+                "No data to display. Try asking a question in the chat!",
+                style="text-align:center;padding:40px;color:#999;"
+            )
 
         city_avg = (
             df.groupby("department_name", as_index=False)["violent_per_100k"]
@@ -688,20 +744,21 @@ def server(input, output, session):
 
         chart = alt.Chart(city_avg).mark_bar().encode(
             x=alt.X("department_name:N", sort="-y", title="City",
-                     axis=alt.Axis(labelAngle=-45)),
+                    axis=alt.Axis(labelAngle=-45)),
             y=alt.Y("violent_per_100k:Q", title="Avg Violent Crime per 100k"),
             tooltip=["department_name:N", "violent_per_100k:Q"],
             color=alt.value("#2c3e50"),
         ).properties(width="container", height=350)
 
         return ui.div(
-                        {"id": "ai-bar-container", "class": "altair-chart"},
-                        ui.HTML(chart.to_html())
-                    )
+            {"id": "ai-bar-container", "class": "altair-chart"},
+            ui.HTML(chart.to_html())
+        )
 
+    @output
     @render.data_frame
     def ai_data_table():
-        return qc_vals.df()
+        return render.DataGrid(qc_vals.df(), selection_mode="row")
 
     @render.download(filename="filtered_crime_data.csv")
     def ai_download():
