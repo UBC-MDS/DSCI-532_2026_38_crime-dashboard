@@ -34,6 +34,8 @@ crimes_df = pd.read_csv(DATA_PATH)
 #  QueryChat Setup 
 # Create a QueryChat instance for the AI tab
 # Use ANTHROPIC_API_KEY from .env file automatically
+AI_UNAVAILABLE_MSG = "AI Explorer requires an ANTHROPIC_API_KEY. Please set it in your .env file."
+
 qc = None
 if os.getenv("ANTHROPIC_API_KEY"):
     try:
@@ -44,7 +46,8 @@ if os.getenv("ANTHROPIC_API_KEY"):
             data_description=(BASE_DIR / "data" / "data_description.md"),
             client="anthropic/claude-sonnet-4-20250514",
         )
-    except Exception:
+    except (ImportError, ValueError, RuntimeError) as e:
+        print(f"QueryChat initialization failed: {e}")
         qc = None
 
 
@@ -179,7 +182,7 @@ app_ui = ui.page_fillable(
             "AI Explorer",
             ui.page_sidebar(
                 ui.sidebar(
-                    qc.ui() if qc is not None else ui.p("AI Explorer requires an ANTHROPIC_API_KEY. Please set it in your .env file.")
+                    qc.ui() if qc is not None else ui.p(AI_UNAVAILABLE_MSG)
                 ),
                 # Main content area
                 ui.layout_columns(
@@ -592,7 +595,7 @@ def server(input, output, session):
     @render.ui
     def ai_trend_chart():
         if qc_vals is None:
-            return ui.p("AI Explorer requires an ANTHROPIC_API_KEY.",
+            return ui.p(AI_UNAVAILABLE_MSG,
                         style="text-align:center; padding:40px; color:#999;")
         df = qc_vals.df()
         if df.empty or "year" not in df.columns or "violent_per_100k" not in df.columns:
@@ -622,7 +625,7 @@ def server(input, output, session):
     @render.ui
     def ai_city_bar_chart():
         if qc_vals is None:
-            return ui.p("AI Explorer requires an ANTHROPIC_API_KEY.",
+            return ui.p(AI_UNAVAILABLE_MSG,
                         style="text-align:center; padding:40px; color:#999;")
         df = qc_vals.df()
         if df.empty or "department_name" not in df.columns or "violent_per_100k" not in df.columns:
@@ -657,7 +660,7 @@ def server(input, output, session):
     @render.download(filename="filtered_crime_data.csv")
     def ai_download():
         if qc_vals is None:
-            yield ""
+            yield crimes_df.head(0).to_csv(index=False)
             return
         yield qc_vals.df().to_csv(index=False)
 
