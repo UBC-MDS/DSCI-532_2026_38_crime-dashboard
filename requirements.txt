@@ -12,6 +12,7 @@ watchfiles==1.1.1
 pandas==3.0.1
 numpy==2.4.2
 pyarrow==23.0.1
+duckdb==1.5.0
 
 # Visualization
 altair==6.0.0
@@ -68,5 +69,6 @@ pyparsing==3.3.2
 
 querychat
 chatlas
+shinychat
 python-dotenv
 anthropic

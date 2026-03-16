@@ -4,6 +4,48 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.4.1] - 2026-03-13
+
+### Added
+
+- Added contextual helper notes under KPI metric cards to clarify interpretation and units (e.g., incidents per 100k residents)
+
+### Changed
+
+- Removed duplicate in-plot titles from dashboard visualizations so each chart uses the card header as the single source of title text
+
+### Fixed
+
+- Fixed year label formatting in the Year Range slider by disabling numeric separators/decimals for cleaner integer year display
+
+### Known Issues
+
+N/A
+
+## [0.4.0] - 2026-03-11
+
+### Added
+
+- Added `scripts/convert_to_parquet.py` to convert the raw CSV dataset to Parquet format, stored in `data/processed/crime.parquet`
+- Added `duckdb` as a project dependency in `environment.yml` and `requirements.txt`
+
+### Changed
+
+- Replaced module-level `pd.read_csv()` data loading with a persistent DuckDB in-memory connection backed by the Parquet file via a `CREATE VIEW` statement
+- Replaced hardcoded `crimes_df`-derived UI boundary values (`YEAR_MIN`, `YEAR_MAX`, `CITY_CHOICES`) with lightweight DuckDB metadata queries (`MIN`, `MAX`, `DISTINCT`) that scan only column statistics rather than full rows
+- Rewired `filtered_df()` reactive calc to execute a parameterised SQL query (`WHERE year BETWEEN ? AND ?` with optional `IN (...)` for cities) against DuckDB, so all filtering happens at the database level before any data enters a DataFrame
+- Replaced `prepare_state_data()` (which received the full global DataFrame) with `prepare_state_data_from_db()`, which issues a single-year DuckDB query and pulls only the matching rows into Python for state-level aggregation
+- Moved `CITY_TO_STATE`, `STATE_FIPS`, and `CRIME_METRIC_MAP` dictionaries to module level to eliminate repeated redefinition on every render call
+- `QueryChat` (AI Explorer tab) now initialises from `pd.read_parquet()` instead of `pd.read_csv()`, keeping the AI tab functional while isolating it from the main dashboard lazy-loading path
+
+### Fixed
+
+N/A
+
+### Known Issues
+
+N/A
+
 ## [0.3.0] - 2026-03-08
 
 ### Added
