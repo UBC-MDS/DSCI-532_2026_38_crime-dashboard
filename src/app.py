@@ -6,8 +6,8 @@ import altair as alt
 from vega_datasets import data as vega_data
 from shiny import req
 from faicons import icon_svg
-from querychat import QueryChat
 from dotenv import load_dotenv
+import os
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,12 +34,21 @@ crimes_df = pd.read_csv(DATA_PATH)
 #  QueryChat Setup 
 # Create a QueryChat instance for the AI tab
 # Use ANTHROPIC_API_KEY from .env file automatically
-qc = QueryChat(
-    crimes_df,
-    "crime_data",
-    data_description=(BASE_DIR / "data" / "data_description.md"),
-    client="anthropic/claude-sonnet-4-20250514",
-)
+AI_UNAVAILABLE_MSG = "AI Explorer requires an ANTHROPIC_API_KEY. Please set it in your .env file."
+
+qc = None
+if os.getenv("ANTHROPIC_API_KEY"):
+    try:
+        from querychat import QueryChat
+        qc = QueryChat(
+            crimes_df,
+            "crime_data",
+            data_description=(BASE_DIR / "data" / "data_description.md"),
+            client="anthropic/claude-sonnet-4-20250514",
+        )
+    except (ImportError, ValueError, RuntimeError) as e:
+        print(f"QueryChat initialization failed: {e}")
+        qc = None
 
 
 # UI
@@ -59,7 +68,7 @@ app_ui = ui.page_fillable(
             rel="stylesheet"
         ),
 
-        ui.include_css("www/styles.css"),
+        ui.include_css(Path(__file__).parent / "www" / "styles.css"),
 
         # --- LINES TO PRELOAD THE MAP SCRIPTS ---
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/vega@5"),
@@ -172,7 +181,9 @@ app_ui = ui.page_fillable(
         ui.nav_panel(
             "AI Explorer",
             ui.page_sidebar(
-                ui.sidebar(qc.ui()),
+                ui.sidebar(
+                    qc.ui() if qc is not None else ui.p(AI_UNAVAILABLE_MSG)
+                ),
                 # Main content area
                 ui.layout_columns(
                     ui.card(
@@ -558,17 +569,21 @@ def server(input, output, session):
     # AI EXPLORER TAB SERVER LOGIC
    
     # Initialize querychat — returns object with reactive .df() method
-    qc_vals = qc.server()
+    qc_vals = qc.server() if qc is not None else None
 
     # KPI: Row count
     @render.ui
     def ai_row_count():
+        if qc_vals is None:
+            return ui.h3("N/A", class_="kpi-val")
         n = len(qc_vals.df())
         return ui.h3(f"{n:,}", class_="kpi-val")
 
     # KPI: Unique city count
     @render.ui
     def ai_city_count():
+        if qc_vals is None:
+            return ui.h3("N/A", class_="kpi-val")
         df = qc_vals.df()
         if "department_name" in df.columns:
             n = df["department_name"].nunique()
@@ -579,6 +594,9 @@ def server(input, output, session):
     # Plot 1: Violent crime trend over time (line chart)
     @render.ui
     def ai_trend_chart():
+        if qc_vals is None:
+            return ui.p(AI_UNAVAILABLE_MSG,
+                        style="text-align:center; padding:40px; color:#999;")
         df = qc_vals.df()
         if df.empty or "year" not in df.columns or "violent_per_100k" not in df.columns:
             return ui.p("No data to display. Try asking a question in the chat!",
@@ -606,6 +624,9 @@ def server(input, output, session):
     # Plot 2: Crime rate by city (bar chart)
     @render.ui
     def ai_city_bar_chart():
+        if qc_vals is None:
+            return ui.p(AI_UNAVAILABLE_MSG,
+                        style="text-align:center; padding:40px; color:#999;")
         df = qc_vals.df()
         if df.empty or "department_name" not in df.columns or "violent_per_100k" not in df.columns:
             return ui.p("No data to display. Try asking a question in the chat!",
@@ -631,11 +652,16 @@ def server(input, output, session):
     # Data table
     @render.data_frame
     def ai_data_table():
+        if qc_vals is None:
+            return pd.DataFrame()
         return qc_vals.df()
 
     # Download button
     @render.download(filename="filtered_crime_data.csv")
     def ai_download():
+        if qc_vals is None:
+            yield crimes_df.head(0).to_csv(index=False)
+            return
         yield qc_vals.df().to_csv(index=False)
 
 
