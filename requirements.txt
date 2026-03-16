@@ -68,6 +68,5 @@ pyparsing==3.3.2
 
 querychat
 chatlas
-shinychat
 python-dotenv
 anthropic
