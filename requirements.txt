@@ -12,8 +12,8 @@ pandas==3.0.1
 numpy==2.4.2
 pyarrow==23.0.1
 duckdb
- 
-# ── Visualisation
+
+# Visualization
 altair==6.0.0
 matplotlib==3.10.8
 plotly==6.5.2
@@ -24,5 +24,5 @@ vega-datasets==0.9.0
 # ── AI / chat 
 querychat
 chatlas
-anthropic
 python-dotenv
+anthropic
