@@ -152,7 +152,7 @@ app_ui = ui.page_fillable(
                         {"class": "kpi-card"},
                         ui.card_header("Peak Crime Year"),
                         ui.output_ui("peak_year"),
-                        ui.div("Year with highest average rate", class_="kpi-sub"
+                        ui.div("Year with highest average rate", class_="kpi-sub")
                     ),
                     ui.card(
                         {"class": "kpi-card"},
