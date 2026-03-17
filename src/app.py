@@ -201,7 +201,7 @@ app_ui = ui.page_fillable(
         ui.nav_panel(
         "AI Explorer",
             ui.layout_sidebar(
-                ui.sidebar(qc.ui()),
+                ui.sidebar(qc.ui(), width="500px"),
 
                 # KPI row
                 ui.layout_columns(
