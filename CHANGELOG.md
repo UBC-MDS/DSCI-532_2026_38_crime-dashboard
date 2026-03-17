@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.4.2] - 2026-03-17
+
+### Added
+- Created `src/geo_lookup.py` module containing `CITY_TO_STATE`, `STATE_FIPS`,
+  `CRIME_METRIC_MAP`, and `prepare_state_data()` — extracted from `app.py` to
+  improve maintainability and separation of concerns
+
+### Changed
+- Modularised state-level map data preparation logic out of `app.py` into
+  `geo_lookup.py`; `app.py` now imports `prepare_state_data` and
+  `CRIME_METRIC_MAP` from this module
+- Cleaned `requirements.txt` by removing ~47 transitive sub-dependencies that
+  are installed automatically by their parent packages, leaving only direct
+  dependencies
+
+### Fixed
+- Added missing `duckdb` entry to `requirements.txt`, which caused a
+  `ModuleNotFoundError` on fresh clone and was the root cause of the app
+  failing to run after cloning
+
+### Known Issues
+
+N/A
+
 ## [0.4.1] - 2026-03-13
 
 ### Added
