@@ -9,6 +9,7 @@ from faicons import icon_svg
 from querychat import QueryChat
 from dotenv import load_dotenv
 import duckdb
+import uuid 
 
 load_dotenv()
 
@@ -233,6 +234,11 @@ app_ui = ui.page_fillable(
                     col_widths=(6, 6),
                 ),
 
+                ui.card(
+                        {"class": "kpi-card", "style": "margin-top:20px;"},
+                        ui.card_header("Selected City from Table Click"),
+                        ui.output_ui("ai_selected_city_text"),
+                ),
 
                 # Data table (added margin-top)
                 ui.card(
@@ -740,10 +746,14 @@ def server(input, output, session):
             strokeWidth=0
         )
     
-        return ui.div(
-                        {"id": "map-container", "class": "altair-map"},
-                        ui.HTML(final_map.to_html())
-                        )
+        # Generate unique ID to prevent chart bleeding
+        unique_id = f"map-{uuid.uuid4().hex[:12]}"
+        map_html = final_map.to_html()
+        map_html = map_html.replace('id="vis"', f'id="{unique_id}"')
+        map_html = map_html.replace("'#vis'", f"'#{unique_id}'")
+        map_html = map_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(map_html)
 
     # ------------------------------------------------------------------
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
@@ -751,25 +761,71 @@ def server(input, output, session):
 
     qc_vals = qc.server()
 
+    @reactive.calc
+    def ai_selected_city():
+        df = qc_vals.df()
+        if df.empty or "department_name" not in df.columns:
+            return None
+        
+        sel = ai_data_table.cell_selection()
+        if sel is None:
+            return None
+
+        rows = sel.get("rows", [])
+        if not rows:
+            return None
+        
+        row_idx = rows[0]
+        if row_idx >= len(df):
+            return None
+
+        return df.iloc[row_idx]["department_name"]
+
+    @reactive.calc
+    def ai_clicked_df():
+        df = qc_vals.df()
+        city = ai_selected_city()
+
+        # If no city is selected, return ALL data (no filtering)
+        if city is None:
+            return df
+
+        # If city is selected, filter to that city only
+        if df.empty or "department_name" not in df.columns:
+            return df
+
+        return df[df["department_name"] == city].copy()
+
+    @output
+    @render.ui
+    def ai_selected_city_text():
+        city = ai_selected_city()
+        if city is None:
+            return ui.p(
+                "Click a row in the filtered crime table to focus the AI charts on that city.",
+                class_="muted"
+            )
+        return ui.h4(city, class_="kpi-val")
+
     # KPI: Row count
     @output
     @render.ui
     def ai_row_count():
-        return ui.h3(f"{len(qc_vals.df()):,}", class_="kpi-val")
+        return ui.h3(f"{len(ai_clicked_df()):,}", class_="kpi-val")
 
     # KPI: Unique city count
     @output
     @render.ui
     def ai_city_count():
-        df = qc_vals.df()
-        n  = df["department_name"].nunique() if "department_name" in df.columns else 0
+        df = ai_clicked_df()
+        n = df["department_name"].nunique() if "department_name" in df.columns else 0
         return ui.h3(str(n), class_="kpi-val")
 
     # Plot 1: Violent crime trend over time (line chart)
     @output
     @render.ui
     def ai_trend_chart():
-        df = qc_vals.df()
+        df = ai_clicked_df()
         if df.empty or "year" not in df.columns or "violent_per_100k" not in df.columns:
             return ui.p("No data to display. Try asking a question in the chat!",
                         style="text-align:center;padding:40px;color:#999;")
@@ -811,16 +867,20 @@ def server(input, output, session):
                 title=f"Average across {n_cities} cities (shaded = min/max range)",
             )
 
-        return ui.div(
-            {"id": "ai-trend-container", "class": "altair-chart"},
-            ui.HTML(chart.to_html())
-        )
+        # Generate unique ID to prevent chart bleeding
+        unique_id = f"ai-trend-{uuid.uuid4().hex[:12]}"
+        chart_html = chart.to_html()
+        chart_html = chart_html.replace('id="vis"', f'id="{unique_id}"')
+        chart_html = chart_html.replace("'#vis'", f"'#{unique_id}'")
+        chart_html = chart_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(chart_html)
     
     # Plot 2: Crime rate by city (bar chart)
     @output
     @render.ui
     def ai_city_bar_chart():
-        df = qc_vals.df()
+        df = ai_clicked_df()
         if df.empty or "department_name" not in df.columns or "violent_per_100k" not in df.columns:
             return ui.p("No data to display. Try asking a question in the chat!",
                         style="text-align:center;padding:40px;color:#999;")
@@ -840,14 +900,17 @@ def server(input, output, session):
             color=alt.value("#2c3e50"),
         ).properties(width="container", height=350)
 
-        return ui.div(
-                        {"id": "ai-bar-container", "class": "altair-chart"},
-                        ui.HTML(chart.to_html())
-                    )
+        unique_id = f"ai-bar-{uuid.uuid4().hex[:12]}"
+        chart_html = chart.to_html()
+        chart_html = chart_html.replace('id="vis"', f'id="{unique_id}"')
+        chart_html = chart_html.replace("'#vis'", f"'#{unique_id}'")
+        chart_html = chart_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(chart_html)
 
     @render.data_frame
     def ai_data_table():
-        return qc_vals.df()
+        return render.DataGrid(qc_vals.df(), selection_mode="row")
 
     @render.download(filename="filtered_crime_data.csv")
     def ai_download():
