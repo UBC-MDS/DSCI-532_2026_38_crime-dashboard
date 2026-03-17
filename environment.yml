@@ -30,3 +30,8 @@ dependencies:
       - chatlas
       - anthropic
       - python-dotenv
+      - pytest
+      - playwright
+      - pytest
+      - playwright
+      - pytest-playwright
