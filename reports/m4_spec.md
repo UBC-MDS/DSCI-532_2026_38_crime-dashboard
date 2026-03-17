@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # Milestone 4 Specification
 
 ## Project: Crime Trends Dashboard (DSCI 532)
