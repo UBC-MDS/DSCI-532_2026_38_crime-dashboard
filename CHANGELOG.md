@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
-## [0.4.3] - 2026-03-17
+## [0.4.0] - 2026-03-17
 
 ### Added
 
@@ -28,7 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 N/A
 
-## [0.4.2] - 2026-03-17
+## [0.4.0] - 2026-03-17
 
 ### Added
 - Created `src/state.py` module containing `CITY_TO_STATE`, `STATE_FIPS`,`CRIME_METRIC_MAP`, and `prepare_state_data()` — extracted from `app.py` to improve maintainability and separation of concerns
@@ -44,7 +44,7 @@ N/A
 
 N/A
 
-## [0.4.1] - 2026-03-13
+## [0.4.0] - 2026-03-13
 
 ### Added
 
