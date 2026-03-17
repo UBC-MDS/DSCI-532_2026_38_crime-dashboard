@@ -9,6 +9,7 @@ from faicons import icon_svg
 from querychat import QueryChat
 from dotenv import load_dotenv
 import duckdb
+import uuid 
 
 load_dotenv()
 
@@ -201,12 +202,12 @@ app_ui = ui.page_fillable(
                 # KPI row
                 ui.layout_columns(
                     ui.card(
-                        {"class": "kpi-card"},
+                        {"class": "kpi-card", "style": "min-height: 140px;"},
                         ui.card_header("Rows in Filtered Data"),
                         ui.output_ui("ai_row_count"),
                     ),
                     ui.card(
-                        {"class": "kpi-card"},
+                        {"class": "kpi-card", "style": "min-height: 140px;"},
                         ui.card_header("Cities in Filtered Data"),
                         ui.output_ui("ai_city_count"),
                     ),
@@ -217,12 +218,12 @@ app_ui = ui.page_fillable(
                 ui.layout_columns(
                     {"style": "margin-top:20px;"},
                     ui.card(
-                        {"class": "plot-card"},
+                        {"class": "plot-card", "style": "min-height: 450px;"},
                         ui.card_header("Crime Rate by City"),
                         ui.output_ui("ai_city_bar_chart"),
                     ),
                     ui.card(
-                        {"class": "plot-card"},
+                        {"class": "plot-card", "style": "min-height: 450px;"},
                         ui.card_header("Violent Crime Trend Over Time"),
                         ui.output_ui("ai_trend_chart"),
                     ),
@@ -619,10 +620,16 @@ def server(input, output, session):
             strokeWidth=0
         )
     
-        return ui.div(
-                        {"id": "map-container", "class": "altair-map"},
-                        ui.HTML(final_map.to_html())
-                        )
+        # Generate unique ID to prevent chart bleeding
+        unique_id = f"crime-map-{uuid.uuid4().hex[:12]}"
+        map_html = final_map.to_html()
+
+        # Replace all ID patterns
+        map_html = map_html.replace('id="vis"', f'id="{unique_id}"')
+        map_html = map_html.replace("'#vis'", f"'#{unique_id}'")
+        map_html = map_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(map_html)
 
     # ------------------------------------------------------------------
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
@@ -690,9 +697,17 @@ def server(input, output, session):
                 title=f"Average across {n_cities} cities (shaded = min/max range)",
             )
 
+        unique_id = f"ai-trend-{uuid.uuid4().hex[:12]}"
+        chart_html = chart.to_html()
+
+        # Replace all ID patterns
+        chart_html = chart_html.replace('id="vis"', f'id="{unique_id}"')
+        chart_html = chart_html.replace("'#vis'", f"'#{unique_id}'")
+        chart_html = chart_html.replace('"#vis"', f'"#{unique_id}"')
+
         return ui.div(
-            {"id": "ai-trend-container", "class": "altair-chart"},
-            ui.HTML(chart.to_html())
+            {"style": "min-height: 400px;"},
+            ui.HTML(chart_html)
         )
     
     # Plot 2: Crime rate by city (bar chart)
@@ -719,10 +734,18 @@ def server(input, output, session):
             color=alt.value("#2c3e50"),
         ).properties(width="container", height=350)
 
+        unique_id = f"ai-bar-{uuid.uuid4().hex[:12]}"
+        chart_html = chart.to_html()
+
+        # Replace all ID patterns
+        chart_html = chart_html.replace('id="vis"', f'id="{unique_id}"')
+        chart_html = chart_html.replace("'#vis'", f"'#{unique_id}'")
+        chart_html = chart_html.replace('"#vis"', f'"#{unique_id}"')
+
         return ui.div(
-                        {"id": "ai-bar-container", "class": "altair-chart"},
-                        ui.HTML(chart.to_html())
-                    )
+            {"style": "min-height: 400px;"},
+            ui.HTML(chart_html)
+        )
 
     @render.data_frame
     def ai_data_table():
