@@ -1,4 +1,4 @@
-from state import CITY_TO_STATE, STATE_FIPS, CRIME_METRIC_MAP, prepare_state_data_from_db
+from .state import CITY_TO_STATE, STATE_FIPS, CRIME_METRIC_MAP, prepare_state_data_from_db
 from shiny import App, ui, reactive, render
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -24,7 +24,6 @@ plt.rcParams.update(
         "font.size": 11,
     }
 )
-
 
 # ---------------------------------------------------------------------------
 # Database setup
@@ -140,7 +139,7 @@ app_ui = ui.page_fillable(
                     ui.input_select(
                         "crime_type",
                         "Crime Metric",
-                        choices=["None", "Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
+                        choices=["Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
                         selected="Violent Crime" 
                     ),
                     ui.input_action_button(
@@ -153,17 +152,41 @@ app_ui = ui.page_fillable(
                 ui.layout_columns(
                     ui.card(
                         {"class": "kpi-card"},
-                        ui.card_header("Peak Crime Year"),
+                        ui.card_header(
+                            ui.div(
+                                {"style": "display: flex; align-items: center; gap: 8px;"},
+                                icon_svg("arrow-trend-up", height="1.2em", fill="#e74c3c"),
+                                ui.span("Peak Crime Year"),
+                            )
+                        ),
                         ui.output_ui("peak_year"),
                         ui.div("Year with highest average rate", class_="kpi-sub")
                     ),
                     ui.card(
                         {"class": "kpi-card"},
-                        ui.card_header("Average Rate"),
+                        ui.card_header(
+                            ui.div(
+                                {"style": "display: flex; align-items: center; gap: 8px;"},
+                                icon_svg("building", height="1.2em", fill="#2c3e50"),
+                                ui.span("Highest Crime City"),
+                            )
+                        ),
+                        ui.output_ui("highest_crime_city"),
+                        ui.div("City with highest rate for selected metric", class_="kpi-sub")
+                    ),
+                    ui.card(
+                        {"class": "kpi-card"},
+                        ui.card_header(
+                            ui.div(
+                                {"style": "display: flex; align-items: center; gap: 8px;"},
+                                icon_svg("chart-line", height="1.2em", fill="#3498db"),
+                                ui.span("Average Rate"),
+                            )
+                        ),
                         ui.output_ui("crime_rate"),
                         ui.div("per 100k residents", class_="kpi-sub"),
                     ),
-                    col_widths=(7, 5),
+                    col_widths=(4, 4, 4),
                 ),
                 ui.card(
                     {"class": "plot-card"},
@@ -321,7 +344,9 @@ def server(input, output, session):
             return ui.h6("Select a type of Crime", class_="kpi-val")
         try:
             idx = df[col].idxmax()
-            return ui.h3(str(int(df.loc[idx, "year"])), class_="kpi-val")
+            return ui.h3(str(int(df.loc[idx, "year"])), 
+                         class_="kpi-val",
+                         style="color: #e74c3c; font-weight: bold;")
         except (KeyError, ValueError):
             return ui.h6("Select a type of Crime", class_="kpi-val")
 
@@ -333,9 +358,29 @@ def server(input, output, session):
         if col is None or df.empty:
             return ui.h6("Select a type of Crime", class_="kpi-val")
         try:
-            return ui.h3(f"{df[col].mean():.1f}", class_="kpi-val")
+            return ui.h3(f"{df[col].mean():.1f}", 
+                         class_="kpi-val",
+                         style="color: #3498db; font-weight: bold;")
         except (KeyError, TypeError):
             return ui.h3("-", class_="kpi-val")
+        
+    @output
+    @render.ui
+    def highest_crime_city():
+        col = selected_column()
+        df  = filtered_df()
+        if col is None or df.empty:
+            return ui.h6("Select a type of Crime", class_="kpi-val")
+        try:
+            idx = df[col].idxmax()
+            city = df.loc[idx, "department_name"]
+            rate = df.loc[idx, col]
+            return ui.div(
+                ui.h4(city, class_="kpi-val", style="color: #2c3e50; margin-bottom: 5px;"),
+                ui.div(f"{rate:.1f} per 100k", style="font-size: 0.9rem; color: #7f8c8d;")
+            )
+        except (KeyError, ValueError):
+            return ui.h6("Select a type of Crime", class_="kpi-val")
 
     # ------------------------------------------------------------------
     # Trend plot
