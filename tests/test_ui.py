@@ -2,7 +2,7 @@
 import pytest
 from playwright.sync_api import sync_playwright, expect
 
-APP_URL = "http://localhost:8000"  # change to the Posit Connect URL when testing deployed
+APP_URL = "https://019c9723-a4d1-3cd7-eb5c-fa163f62eb99.share.connect.posit.cloud/"  # change to the Posit Connect URL when testing deployed
 
 # Verifies the app loads with both tabs visible and no crashes on startup,
 # since a broken import or layout error would prevent any user interaction.

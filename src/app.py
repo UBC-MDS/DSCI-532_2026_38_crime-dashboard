@@ -9,6 +9,7 @@ from faicons import icon_svg
 from querychat import QueryChat
 from dotenv import load_dotenv
 import duckdb
+import uuid 
 
 load_dotenv()
 
@@ -112,6 +113,7 @@ app_ui = ui.page_fillable(
                         "city",
                         "Select City (max 6)",
                         choices=CITY_CHOICES,          # from metadata query
+                        selected=["Los Angeles", "New York City"], 
                         multiple=True,
                         options={"placeholder": "Type to search cities...", "maxItems": 6},
                     ),
@@ -138,7 +140,7 @@ app_ui = ui.page_fillable(
                         "crime_type",
                         "Crime Metric",
                         choices=["None", "Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                        selected="None"
+                        selected="Violent Crime" 
                     ),
                     ui.input_action_button(
                         "reset",
@@ -171,7 +173,8 @@ app_ui = ui.page_fillable(
                             ui.span(" (Tip: Select ≤6 cities for a clean plot)", class_="muted small"),
                         )
                     ),
-                    ui.output_plot("trend_plot"),
+                    ui.output_plot("trend_plot", hover=True),
+                    ui.output_ui("trend_tooltip", class_="text-center mt-2"), # tooltip for chart
                 ),
                 ui.layout_columns(
                     ui.card(
@@ -184,7 +187,8 @@ app_ui = ui.page_fillable(
                         {"class": "plot-card"},
                         ui.card_header("City Comparison"),
                         ui.div("Average over selected years", class_="muted small pad-b"),
-                        ui.output_plot("city_comparison_plot"),
+                        ui.output_plot("city_comparison_plot", hover=True),
+                        ui.output_ui("city_tooltip", class_="text-center mt-2"), # tooltip for chart
                     ),
                     col_widths=(7, 5),
                 ),
@@ -230,6 +234,11 @@ app_ui = ui.page_fillable(
                     col_widths=(6, 6),
                 ),
 
+                ui.card(
+                        {"class": "kpi-card", "style": "margin-top:20px;"},
+                        ui.card_header("Selected City from Table Click"),
+                        ui.output_ui("ai_selected_city_text"),
+                ),
 
                 # Data table (added margin-top)
                 ui.card(
@@ -411,9 +420,9 @@ def server(input, output, session):
     @reactive.effect
     @reactive.event(input.reset)
     def _():
-        ui.update_selectize("city", selected=[])
+        ui.update_selectize("city", selected=["Los Angeles", "New York City"])
         ui.update_slider("year_range", value=(YEAR_MIN, YEAR_MAX))
-        ui.update_select("crime_type", selected="None")
+        ui.update_select("crime_type", selected="Violent Crime") 
         ui.update_slider("map_year", value=YEAR_MAX)
 
     # ------------------------------------------------------------------
@@ -488,32 +497,113 @@ def server(input, output, session):
 
         fig, ax = plt.subplots(figsize=(10, 4.8))
 
+        # Compute dataset-wide average (all cities, filtered years)
+        start, end = input.year_range()
+        dataset_avg = con.execute(
+            f"""
+            SELECT year, AVG("{col}") as avg_rate
+            FROM crimes
+            WHERE year BETWEEN ? AND ?
+            AND "{col}" IS NOT NULL
+            GROUP BY year
+            ORDER BY year
+            """,
+            [start, end]
+        ).df()
+
+        # Safety check: if user removes all cities
         if not input.city():
-            ax.text(0.5, 0.5, "Select 1+ cities to view trends", ha="center", va="center")
-            ax.set_axis_off()
+            # Show only the dataset average
+            ax.plot(
+                dataset_avg["year"], 
+                dataset_avg["avg_rate"], 
+                label="All Cities Average",
+                color="black",
+                linewidth=2,
+                linestyle="--"
+            )
+            ax.set_xlabel("Year")
+            ax.set_ylabel("Rate per 100k")
+            ax.set_title(f"{input.crime_type()} Trend Over Time (All Cities)")
+            ax.legend()
+            fig.tight_layout()
             return fig
 
+        # Safety check: if filtered data is empty
         if df.empty:
             ax.text(0.5, 0.5, "No data for selected filters", ha="center", va="center")
             ax.set_axis_off()
             return fig
 
+        # Plot dataset-wide average first (behind city lines)
+        ax.plot(
+            dataset_avg["year"], 
+            dataset_avg["avg_rate"], 
+            label="All Cities Average",
+            color="black",
+            linewidth=2,
+            linestyle="--",
+            alpha=0.7,
+            zorder=1
+        )
+
+        # Plot selected cities
         colors = plt.cm.tab10.colors
         selected_cities = sorted(input.city())
         city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
 
         for city, group in df.groupby("department_name"):
-            ax.plot(group["year"], group[col], label=city, color=city_colors[city])
+            ax.plot(
+                group["year"], 
+                group[col], 
+                label=city, 
+                color=city_colors[city],
+                linewidth=1.5,
+                zorder=2
+            )
 
         ax.set_xlabel("Year")
         ax.set_ylabel("Rate per 100k")
         ax.set_title(f"{input.crime_type()} Trend Over Time")
 
+        # Show legend if not too many cities
         if len(input.city()) <= 6:
-            ax.legend()
+            ax.legend(loc="best")
 
         fig.tight_layout()
         return fig
+    
+    @output
+    @render.ui
+    def trend_tooltip():
+        # Fixed height prevents layout bouncing
+        box_style = "min-height: 25px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;"
+        
+        hover = input.trend_plot_hover() 
+        if hover is None or hover.get("x") is None:
+            return ui.div("Hover over the plot to see exact rates by year.", class_="text-muted", style=box_style)
+
+        df = filtered_df()
+        col = selected_column()
+        if df.empty or col is None:
+            return ui.div("", style=box_style)
+
+        x_coord = hover.get("x")
+        hovered_year = int(round(x_coord))
+        
+        df_year = df[df["year"] == hovered_year]
+        if df_year.empty:
+            return ui.div(f"Year: {hovered_year} | No data", style=box_style)
+
+        city_texts = []
+        for _, row in df_year.iterrows():
+            city_texts.append(f"{row['department_name']}: {row[col]:.1f}")
+
+        return ui.div(
+            ui.strong(f"Year {hovered_year}: "),
+            ui.span(" | ".join(city_texts), style="margin-left: 5px;"),
+            style=box_style
+        )
 
     # ------------------------------------------------------------------
     # City comparison bar chart
@@ -556,6 +646,42 @@ def server(input, output, session):
         ax.tick_params(axis="x", labelsize=8)
 
         return fig
+    
+    @output
+    @render.ui
+    def city_tooltip():
+        # Fixed height prevents layout bouncing
+        box_style = "min-height: 25px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;"
+        
+        hover = input.city_comparison_plot_hover() 
+        if hover is None or hover.get("y") is None:
+            return ui.div("Hover over a bar to see the exact average.", class_="text-muted", style=box_style)
+
+        df = filtered_df()
+        col = selected_column()
+        if df.empty or col is None:
+            return ui.div("", style=box_style)
+
+        summary = (
+            df.groupby("department_name", as_index=False)[col]
+            .mean()
+            .sort_values(col, ascending=True)
+            .reset_index(drop=True) 
+        )
+
+        y_coord = hover.get("y")
+        hovered_index = int(round(y_coord))
+        
+        if 0 <= hovered_index < len(summary):
+            city = summary.loc[hovered_index, "department_name"]
+            val = summary.loc[hovered_index, col]
+            return ui.div(
+                ui.strong(f"{city}: "), 
+                ui.span(f"{val:.1f} per 100k", style="margin-left: 5px;"),
+                style=box_style
+            )
+            
+        return ui.div("Hover over a bar to see the exact average.", class_="text-muted", style=box_style)
 
     # ------------------------------------------------------------------
     # Choropleth map
@@ -620,10 +746,14 @@ def server(input, output, session):
             strokeWidth=0
         )
     
-        return ui.div(
-                        {"id": "map-container", "class": "altair-map"},
-                        ui.HTML(final_map.to_html())
-                        )
+        # Generate unique ID to prevent chart bleeding
+        unique_id = f"map-{uuid.uuid4().hex[:12]}"
+        map_html = final_map.to_html()
+        map_html = map_html.replace('id="vis"', f'id="{unique_id}"')
+        map_html = map_html.replace("'#vis'", f"'#{unique_id}'")
+        map_html = map_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(map_html)
 
     # ------------------------------------------------------------------
     # AI Explorer tab (QueryChat drives its own reactive filtered df)
@@ -631,25 +761,71 @@ def server(input, output, session):
 
     qc_vals = qc.server()
 
+    @reactive.calc
+    def ai_selected_city():
+        df = qc_vals.df()
+        if df.empty or "department_name" not in df.columns:
+            return None
+        
+        sel = ai_data_table.cell_selection()
+        if sel is None:
+            return None
+
+        rows = sel.get("rows", [])
+        if not rows:
+            return None
+        
+        row_idx = rows[0]
+        if row_idx >= len(df):
+            return None
+
+        return df.iloc[row_idx]["department_name"]
+
+    @reactive.calc
+    def ai_clicked_df():
+        df = qc_vals.df()
+        city = ai_selected_city()
+
+        # If no city is selected, return ALL data (no filtering)
+        if city is None:
+            return df
+
+        # If city is selected, filter to that city only
+        if df.empty or "department_name" not in df.columns:
+            return df
+
+        return df[df["department_name"] == city].copy()
+
+    @output
+    @render.ui
+    def ai_selected_city_text():
+        city = ai_selected_city()
+        if city is None:
+            return ui.p(
+                "Click a row in the filtered crime table to focus the AI charts on that city.",
+                class_="muted"
+            )
+        return ui.h4(city, class_="kpi-val")
+
     # KPI: Row count
     @output
     @render.ui
     def ai_row_count():
-        return ui.h3(f"{len(qc_vals.df()):,}", class_="kpi-val")
+        return ui.h3(f"{len(ai_clicked_df()):,}", class_="kpi-val")
 
     # KPI: Unique city count
     @output
     @render.ui
     def ai_city_count():
-        df = qc_vals.df()
-        n  = df["department_name"].nunique() if "department_name" in df.columns else 0
+        df = ai_clicked_df()
+        n = df["department_name"].nunique() if "department_name" in df.columns else 0
         return ui.h3(str(n), class_="kpi-val")
 
     # Plot 1: Violent crime trend over time (line chart)
     @output
     @render.ui
     def ai_trend_chart():
-        df = qc_vals.df()
+        df = ai_clicked_df()
         if df.empty or "year" not in df.columns or "violent_per_100k" not in df.columns:
             return ui.p("No data to display. Try asking a question in the chat!",
                         style="text-align:center;padding:40px;color:#999;")
@@ -691,16 +867,20 @@ def server(input, output, session):
                 title=f"Average across {n_cities} cities (shaded = min/max range)",
             )
 
-        return ui.div(
-            {"id": "ai-trend-container", "class": "altair-chart"},
-            ui.HTML(chart.to_html())
-        )
+        # Generate unique ID to prevent chart bleeding
+        unique_id = f"ai-trend-{uuid.uuid4().hex[:12]}"
+        chart_html = chart.to_html()
+        chart_html = chart_html.replace('id="vis"', f'id="{unique_id}"')
+        chart_html = chart_html.replace("'#vis'", f"'#{unique_id}'")
+        chart_html = chart_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(chart_html)
     
     # Plot 2: Crime rate by city (bar chart)
     @output
     @render.ui
     def ai_city_bar_chart():
-        df = qc_vals.df()
+        df = ai_clicked_df()
         if df.empty or "department_name" not in df.columns or "violent_per_100k" not in df.columns:
             return ui.p("No data to display. Try asking a question in the chat!",
                         style="text-align:center;padding:40px;color:#999;")
@@ -720,14 +900,17 @@ def server(input, output, session):
             color=alt.value("#2c3e50"),
         ).properties(width="container", height=350)
 
-        return ui.div(
-                        {"id": "ai-bar-container", "class": "altair-chart"},
-                        ui.HTML(chart.to_html())
-                    )
+        unique_id = f"ai-bar-{uuid.uuid4().hex[:12]}"
+        chart_html = chart.to_html()
+        chart_html = chart_html.replace('id="vis"', f'id="{unique_id}"')
+        chart_html = chart_html.replace("'#vis'", f"'#{unique_id}'")
+        chart_html = chart_html.replace('"#vis"', f'"#{unique_id}"')
+
+        return ui.HTML(chart_html)
 
     @render.data_frame
     def ai_data_table():
-        return qc_vals.df()
+        return render.DataGrid(qc_vals.df(), selection_mode="row")
 
     @render.download(filename="filtered_crime_data.csv")
     def ai_download():
