@@ -172,7 +172,8 @@ app_ui = ui.page_fillable(
                             ui.span(" (Tip: Select ≤6 cities for a clean plot)", class_="muted small"),
                         )
                     ),
-                    ui.output_plot("trend_plot"),
+                    ui.output_plot("trend_plot", hover=True),
+                    ui.output_ui("trend_tooltip", class_="text-center mt-2"), # tooltip for chart
                 ),
                 ui.layout_columns(
                     ui.card(
@@ -185,7 +186,8 @@ app_ui = ui.page_fillable(
                         {"class": "plot-card"},
                         ui.card_header("City Comparison"),
                         ui.div("Average over selected years", class_="muted small pad-b"),
-                        ui.output_plot("city_comparison_plot"),
+                        ui.output_plot("city_comparison_plot", hover=True),
+                        ui.output_ui("city_tooltip", class_="text-center mt-2"), # tooltip for chart
                     ),
                     col_widths=(7, 5),
                 ),
@@ -564,6 +566,38 @@ def server(input, output, session):
 
         fig.tight_layout()
         return fig
+    
+    @output
+    @render.ui
+    def trend_tooltip():
+        # Fixed height prevents layout bouncing
+        box_style = "min-height: 25px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;"
+        
+        hover = input.trend_plot_hover() 
+        if hover is None or hover.get("x") is None:
+            return ui.div("Hover over the plot to see exact rates by year.", class_="text-muted", style=box_style)
+
+        df = filtered_df()
+        col = selected_column()
+        if df.empty or col is None:
+            return ui.div("", style=box_style)
+
+        x_coord = hover.get("x")
+        hovered_year = int(round(x_coord))
+        
+        df_year = df[df["year"] == hovered_year]
+        if df_year.empty:
+            return ui.div(f"Year: {hovered_year} | No data", style=box_style)
+
+        city_texts = []
+        for _, row in df_year.iterrows():
+            city_texts.append(f"{row['department_name']}: {row[col]:.1f}")
+
+        return ui.div(
+            ui.strong(f"Year {hovered_year}: "),
+            ui.span(" | ".join(city_texts), style="margin-left: 5px;"),
+            style=box_style
+        )
 
     # ------------------------------------------------------------------
     # City comparison bar chart
@@ -606,6 +640,42 @@ def server(input, output, session):
         ax.tick_params(axis="x", labelsize=8)
 
         return fig
+    
+    @output
+    @render.ui
+    def city_tooltip():
+        # Fixed height prevents layout bouncing
+        box_style = "min-height: 25px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;"
+        
+        hover = input.city_comparison_plot_hover() 
+        if hover is None or hover.get("y") is None:
+            return ui.div("Hover over a bar to see the exact average.", class_="text-muted", style=box_style)
+
+        df = filtered_df()
+        col = selected_column()
+        if df.empty or col is None:
+            return ui.div("", style=box_style)
+
+        summary = (
+            df.groupby("department_name", as_index=False)[col]
+            .mean()
+            .sort_values(col, ascending=True)
+            .reset_index(drop=True) 
+        )
+
+        y_coord = hover.get("y")
+        hovered_index = int(round(y_coord))
+        
+        if 0 <= hovered_index < len(summary):
+            city = summary.loc[hovered_index, "department_name"]
+            val = summary.loc[hovered_index, col]
+            return ui.div(
+                ui.strong(f"{city}: "), 
+                ui.span(f"{val:.1f} per 100k", style="margin-left: 5px;"),
+                style=box_style
+            )
+            
+        return ui.div("Hover over a bar to see the exact average.", class_="text-muted", style=box_style)
 
     # ------------------------------------------------------------------
     # Choropleth map
