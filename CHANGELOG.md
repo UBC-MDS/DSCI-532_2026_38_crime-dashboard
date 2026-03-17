@@ -4,25 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+### Added
+
+- Added New KPI card - City with highest crime rate  
+- Advanced feature has been integrated which plots the `Crime Rate by City` and `Violent Crime Trend Over Time` when clicked on the dataframe row. 
+- Added UUID to all the altair plots so there isnt a bleeding.
+- Interactive component to maltplotlib plots. The users can view the precise metric by hovering over the bar chart or line chart.
+
+### Changed
+
+- The chatbot window size has been increased for better interface 
+- The cities `Los Angeles` and `New York` are selected on default 
+- Crime metric `Violent Crime` is selected on default 
+
+### Fixed 
+
+- Chart bleeding of altair plots
+- Advanced feature was not rendering the trend line plot which has been fixed
+
+### Known Issues
+
+N/A
+
 ## [0.4.2] - 2026-03-17
 
 ### Added
-- Created `src/geo_lookup.py` module containing `CITY_TO_STATE`, `STATE_FIPS`,
-  `CRIME_METRIC_MAP`, and `prepare_state_data()` — extracted from `app.py` to
-  improve maintainability and separation of concerns
+- Created `src/state.py` module containing `CITY_TO_STATE`, `STATE_FIPS`,`CRIME_METRIC_MAP`, and `prepare_state_data()` — extracted from `app.py` to improve maintainability and separation of concerns
 
 ### Changed
-- Modularised state-level map data preparation logic out of `app.py` into
-  `geo_lookup.py`; `app.py` now imports `prepare_state_data` and
-  `CRIME_METRIC_MAP` from this module
-- Cleaned `requirements.txt` by removing ~47 transitive sub-dependencies that
-  are installed automatically by their parent packages, leaving only direct
-  dependencies
+- Modularised state-level map data preparation logic out of `app.py` into `state.py`; `app.py` now imports `prepare_state_data` and `CRIME_METRIC_MAP` from this module
+- Cleaned `requirements.txt` by removing ~47 transitive sub-dependencies that are installed automatically by their parent packages, leaving only direct dependencies
 
 ### Fixed
-- Added missing `duckdb` entry to `requirements.txt`, which caused a
-  `ModuleNotFoundError` on fresh clone and was the root cause of the app
-  failing to run after cloning
+- Added missing `duckdb` entry to `requirements.txt`, which caused a `ModuleNotFoundError` on fresh clone and was the root cause of the app failing to run after cloning
 
 ### Known Issues
 
