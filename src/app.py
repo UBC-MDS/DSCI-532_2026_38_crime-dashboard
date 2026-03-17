@@ -1,4 +1,5 @@
-from .state import CITY_TO_STATE, STATE_FIPS, CRIME_METRIC_MAP, prepare_state_data_from_db
+import state
+from state import CITY_TO_STATE, STATE_FIPS, CRIME_METRIC_MAP, prepare_state_data_from_db
 from shiny import App, ui, reactive, render
 import pandas as pd
 import matplotlib.pyplot as plt
