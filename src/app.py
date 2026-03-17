@@ -112,6 +112,7 @@ app_ui = ui.page_fillable(
                         "city",
                         "Select City (max 6)",
                         choices=CITY_CHOICES,          # from metadata query
+                        selected=["Los Angeles", "New York City"], 
                         multiple=True,
                         options={"placeholder": "Type to search cities...", "maxItems": 6},
                     ),
@@ -138,7 +139,7 @@ app_ui = ui.page_fillable(
                         "crime_type",
                         "Crime Metric",
                         choices=["None", "Violent Crime", "Homicide", "Rape", "Robbery", "Aggravated Assault"],
-                        selected="None"
+                        selected="Violent Crime" 
                     ),
                     ui.input_action_button(
                         "reset",
@@ -152,7 +153,7 @@ app_ui = ui.page_fillable(
                         {"class": "kpi-card"},
                         ui.card_header("Peak Crime Year"),
                         ui.output_ui("peak_year"),
-                        ui.div("Year with highest average rate", class_="kpi-sub"
+                        ui.div("Year with highest average rate", class_="kpi-sub")
                     ),
                     ui.card(
                         {"class": "kpi-card"},
@@ -411,9 +412,9 @@ def server(input, output, session):
     @reactive.effect
     @reactive.event(input.reset)
     def _():
-        ui.update_selectize("city", selected=[])
+        ui.update_selectize("city", selected=["Los Angeles", "New York City"])
         ui.update_slider("year_range", value=(YEAR_MIN, YEAR_MAX))
-        ui.update_select("crime_type", selected="None")
+        ui.update_select("crime_type", selected="Violent Crime") 
         ui.update_slider("map_year", value=YEAR_MAX)
 
     # ------------------------------------------------------------------
@@ -488,29 +489,78 @@ def server(input, output, session):
 
         fig, ax = plt.subplots(figsize=(10, 4.8))
 
+        # Compute dataset-wide average (all cities, filtered years)
+        start, end = input.year_range()
+        dataset_avg = con.execute(
+            f"""
+            SELECT year, AVG("{col}") as avg_rate
+            FROM crimes
+            WHERE year BETWEEN ? AND ?
+            AND "{col}" IS NOT NULL
+            GROUP BY year
+            ORDER BY year
+            """,
+            [start, end]
+        ).df()
+
+        # Safety check: if user removes all cities
         if not input.city():
-            ax.text(0.5, 0.5, "Select 1+ cities to view trends", ha="center", va="center")
-            ax.set_axis_off()
+            # Show only the dataset average
+            ax.plot(
+                dataset_avg["year"], 
+                dataset_avg["avg_rate"], 
+                label="All Cities Average",
+                color="black",
+                linewidth=2,
+                linestyle="--"
+            )
+            ax.set_xlabel("Year")
+            ax.set_ylabel("Rate per 100k")
+            ax.set_title(f"{input.crime_type()} Trend Over Time (All Cities)")
+            ax.legend()
+            fig.tight_layout()
             return fig
 
+        # Safety check: if filtered data is empty
         if df.empty:
             ax.text(0.5, 0.5, "No data for selected filters", ha="center", va="center")
             ax.set_axis_off()
             return fig
 
+        # Plot dataset-wide average first (behind city lines)
+        ax.plot(
+            dataset_avg["year"], 
+            dataset_avg["avg_rate"], 
+            label="All Cities Average",
+            color="black",
+            linewidth=2,
+            linestyle="--",
+            alpha=0.7,
+            zorder=1
+        )
+
+        # Plot selected cities
         colors = plt.cm.tab10.colors
         selected_cities = sorted(input.city())
         city_colors = {city: colors[i % len(colors)] for i, city in enumerate(selected_cities)}
 
         for city, group in df.groupby("department_name"):
-            ax.plot(group["year"], group[col], label=city, color=city_colors[city])
+            ax.plot(
+                group["year"], 
+                group[col], 
+                label=city, 
+                color=city_colors[city],
+                linewidth=1.5,
+                zorder=2
+            )
 
         ax.set_xlabel("Year")
         ax.set_ylabel("Rate per 100k")
         ax.set_title(f"{input.crime_type()} Trend Over Time")
 
+        # Show legend if not too many cities
         if len(input.city()) <= 6:
-            ax.legend()
+            ax.legend(loc="best")
 
         fig.tight_layout()
         return fig
